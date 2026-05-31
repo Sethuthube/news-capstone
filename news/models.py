@@ -72,9 +72,8 @@ class Publisher(models.Model):
 
 
 class Article(models.Model):
-    """
-    Represents a news article written by a journalist.
-    """
+
+    """Represents a news article submitted and managed by users."""
 
     title = models.CharField(max_length=255)
     content = models.TextField()
