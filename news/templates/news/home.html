@@ -1,0 +1,18 @@
+{% extends "news/base.html" %}
+
+{% block content %}
+<h1>Welcome to the News Application</h1>
+
+<p>This platform allows readers, journalists, editors, and publishers to manage and access news content.</p>
+
+{% if not user.is_authenticated %}
+    <p>
+        <a href="{% url 'register' %}">Create an account</a> or
+        <a href="{% url 'login' %}">login</a>.
+    </p>
+{% else %}
+    <p>
+        <a href="{% url 'dashboard' %}">Go to your dashboard</a>
+    </p>
+{% endif %}
+{% endblock %}

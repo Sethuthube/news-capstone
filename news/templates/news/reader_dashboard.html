@@ -1,0 +1,76 @@
+{% extends "news/base.html" %}
+
+{% block content %}
+
+<div class="mb-4">
+    <h1 class="fw-bold">Reader Dashboard</h1>
+    <p class="text-muted">
+        Welcome, {{ request.user.username }}. You can view approved articles,
+        newsletters, publishers, and journalists.
+    </p>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5>Approved Articles</h5>
+                <p class="text-muted">Read articles approved by editors.</p>
+                <a href="{% url 'article_list' %}" class="btn btn-primary btn-sm">
+                    Browse Articles
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5>Newsletters</h5>
+                <p class="text-muted">View curated newsletters from journalists.</p>
+                <span class="badge bg-secondary">
+                    {{ newsletters|length }} Available
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5>Subscriptions</h5>
+                <p class="text-muted">Follow publishers and journalists.</p>
+                <span class="badge bg-success">Reader Access</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3 class="fw-bold mb-3">Latest Approved Articles</h3>
+
+<div class="row g-4">
+    {% for article in articles %}
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5>{{ article.title }}</h5>
+                    <p class="text-muted small">
+                        By {{ article.author }} • {{ article.created_at|date:"d M Y" }}
+                    </p>
+                    <p>{{ article.content|truncatewords:25 }}</p>
+                    <a href="{% url 'article_detail' article.id %}" class="btn btn-outline-primary btn-sm">
+                        Read Article
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No approved articles are available yet.
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

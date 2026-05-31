@@ -1,0 +1,92 @@
+{% extends "news/base.html" %}
+
+{% block content %}
+
+<div class="mb-4">
+    <h1 class="fw-bold">Publisher Dashboard</h1>
+    <p class="text-muted">
+        Welcome, {{ request.user.username }}. Manage publication-related content,
+        editors, journalists, and articles.
+    </p>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5>Publishers</h5>
+                <p class="text-muted">Publication houses in the system.</p>
+                <span class="badge bg-primary">{{ publishers|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5>Journalists</h5>
+                <p class="text-muted">Journalists linked to content creation.</p>
+                <span class="badge bg-secondary">{{ journalists|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5>Editors</h5>
+                <p class="text-muted">Editors responsible for article approval.</p>
+                <span class="badge bg-success">{{ editors|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5>Articles</h5>
+                <p class="text-muted">All articles in the publishing system.</p>
+                <span class="badge bg-dark">{{ articles|length }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3 class="fw-bold mb-3">Publishing Overview</h3>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Article</th>
+                    <th>Author</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article in articles %}
+                    <tr>
+                        <td>{{ article.title }}</td>
+                        <td>{{ article.author }}</td>
+                        <td>
+                            {% if article.approved %}
+                                <span class="badge bg-success">Approved</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ article.created_at|date:"d M Y" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4">No articles available yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'news/base.html' %}
+
+{% block content %}
+    <article>
+        <h2>{{ article.title }}</h2>
+
+        <p>
+            By {{ article.author.username }}
+            {% if article.publisher %}
+                for {{ article.publisher.name }}
+            {% endif %}
+        </p>
+
+        <p>{{ article.content }}</p>
+
+        <p>Created at: {{ article.created_at }}</p>
+    </article>
+{% endblock %}

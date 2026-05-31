@@ -1,0 +1,43 @@
+{% extends "news/base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Editor Dashboard</h2>
+
+<h4>Pending Articles for Review</h4>
+
+{% for article in pending_articles %}
+<div class="card mb-3">
+    <div class="card-body">
+        <h5>{{ article.title }}</h5>
+        <p>{{ article.content|truncatewords:30 }}</p>
+        <p><strong>Author:</strong> {{ article.author }}</p>
+
+        <form method="post" action="{% url 'approve_article' article.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">
+                Approve Article
+            </button>
+        </form>
+    </div>
+</div>
+{% empty %}
+<p>No pending articles to review.</p>
+{% endfor %}
+
+<hr>
+
+<h4>Approved Articles</h4>
+
+{% for article in approved_articles %}
+<div class="card mb-3">
+    <div class="card-body">
+        <h5>{{ article.title }}</h5>
+        <p>{{ article.content|truncatewords:25 }}</p>
+        <p><strong>Status:</strong> Approved</p>
+    </div>
+</div>
+{% empty %}
+<p>No approved articles yet.</p>
+{% endfor %}
+
+{% endblock %}

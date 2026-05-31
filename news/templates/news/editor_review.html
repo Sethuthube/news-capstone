@@ -1,0 +1,25 @@
+{% extends 'news/base.html' %}
+
+{% block content %}
+    <h2>Editor Review</h2>
+
+    {% if articles %}
+        {% for article in articles %}
+            <article>
+                <h3>{{ article.title }}</h3>
+
+                <p>By {{ article.author.username }}</p>
+                <p>{{ article.content|truncatewords:40 }}</p>
+
+                <form method="post" action="{% url 'approve_article' article.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Approve Article</button>
+                </form>
+            </article>
+
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p>No articles waiting for approval.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'news/base.html' %}
+
+{% block content %}
+    <h2>Approved Articles</h2>
+
+    {% if articles %}
+        {% for article in articles %}
+            <article>
+                <h3>
+                    <a href="{% url 'article_detail' article.id %}">
+                        {{ article.title }}
+                    </a>
+                </h3>
+
+                <p>
+                    By {{ article.author.username }}
+                    {% if article.publisher %}
+                        for {{ article.publisher.name }}
+                    {% endif %}
+                </p>
+
+                <p>{{ article.content|truncatewords:30 }}</p>
+            </article>
+
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p>No approved articles available yet.</p>
+    {% endif %}
+{% endblock %}
