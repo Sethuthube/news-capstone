@@ -31,6 +31,7 @@ from .serializers import (
 )
 
 def home(request):
+    """Display the public home page."""
     return render(request, 'news/home.html')
 
 
@@ -49,6 +50,7 @@ def register_view(request):
 
 
 def login_view(request):
+    """Authenticate users and redirect them based on their role."""
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
 
@@ -125,6 +127,7 @@ def reader_dashboard(request):
 @login_required
 @role_required('journalist')
 def journalist_dashboard(request):
+    """Display the journalist dashboard and submitted articles."""
     articles = Article.objects.filter(author=request.user).order_by(
         '-created_at'
     )
@@ -145,6 +148,7 @@ def journalist_dashboard(request):
 @login_required
 @role_required('editor')
 def editor_dashboard(request):
+    """Display articles available for editor review."""
     pending_articles = Article.objects.filter(approved=False).order_by(
         '-created_at'
     )
