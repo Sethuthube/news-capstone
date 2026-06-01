@@ -1,6 +1,19 @@
 {% extends "news/base.html" %}
 
 {% block content %}
+<div class="mb-4">
+    <h1>Journalist Dashboard</h1>
+
+    <p>
+        <a href="{% url 'article_create' %}">Create Article</a>
+        |
+        <a href="{% url 'newsletter_create' %}">Create Newsletter</a>
+        |
+        <a href="{% url 'article_list' %}">View Articles</a>
+        |
+        <a href="{% url 'newsletter_list' %}">View Newsletters</a>
+    </p>
+</div>
 
 <div class="mb-4">
     <h1 class="fw-bold">Journalist Dashboard</h1>

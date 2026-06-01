@@ -1,0 +1,16 @@
+{% extends "news/base.html" %}
+
+{% block content %}
+<h1>Delete Newsletter</h1>
+
+<p>Are you sure you want to delete "{{ newsletter.title }}"?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, Delete</button>
+</form>
+
+<p>
+    <a href="{% url 'newsletter_list' %}">Cancel</a>
+</p>
+{% endblock %}

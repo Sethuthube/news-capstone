@@ -1,6 +1,19 @@
 {% extends "news/base.html" %}
 
 {% block content %}
+<div class="mb-4">
+    <h1>Editor Dashboard</h1>
+
+    <p>
+        <a href="{% url 'article_list' %}">Manage Articles</a>
+        |
+        <a href="{% url 'newsletter_list' %}">Manage Newsletters</a>
+        |
+        <a href="{% url 'publisher_list' %}">Manage Publishers</a>
+        |
+        <a href="{% url 'editor_review' %}">Review Pending Articles</a>
+    </p>
+</div>
 <h2 class="mb-4">Editor Dashboard</h2>
 
 <h4>Pending Articles for Review</h4>

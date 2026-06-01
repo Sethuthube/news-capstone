@@ -1,30 +1,32 @@
-{% extends 'news/base.html' %}
+{% extends "news/base.html" %}
 
 {% block content %}
-    <h2>Approved Articles</h2>
+<h1>Articles</h1>
 
-    {% if articles %}
-        {% for article in articles %}
-            <article>
-                <h3>
-                    <a href="{% url 'article_detail' article.id %}">
-                        {{ article.title }}
-                    </a>
-                </h3>
+{% if user.role == "journalist" or user.role == "editor" or user.is_superuser %}
+    <p>
+        <a href="{% url 'article_create' %}">Create Article</a>
+    </p>
+{% endif %}
 
-                <p>
-                    By {{ article.author.username }}
-                    {% if article.publisher %}
-                        for {{ article.publisher.name }}
-                    {% endif %}
-                </p>
+{% for article in articles %}
+    <div>
+        <h2>{{ article.title }}</h2>
+        <p>{{ article.content|truncatewords:30 }}</p>
+        <p>Author: {{ article.author.username }}</p>
 
-                <p>{{ article.content|truncatewords:30 }}</p>
-            </article>
+        <p>
+            <a href="{% url 'article_detail' article.id %}">View</a>
 
-            <hr>
-        {% endfor %}
-    {% else %}
-        <p>No approved articles available yet.</p>
-    {% endif %}
+            {% if user.role == "editor" or user == article.author or user.is_superuser %}
+                |
+                <a href="{% url 'article_update' article.id %}">Edit</a>
+                |
+                <a href="{% url 'article_delete' article.id %}">Delete</a>
+            {% endif %}
+        </p>
+    </div>
+{% empty %}
+    <p>No articles available.</p>
+{% endfor %}
 {% endblock %}

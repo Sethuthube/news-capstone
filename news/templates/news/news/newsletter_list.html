@@ -1,0 +1,24 @@
+@'
+{% extends "news/base.html" %}
+
+{% block content %}
+<h1>Newsletters</h1>
+
+<p>
+    <a href="{% url 'newsletter_create' %}">Create Newsletter</a>
+</p>
+
+{% for newsletter in newsletters %}
+    <div>
+        <h2>{{ newsletter.title }}</h2>
+        <p>{{ newsletter.description }}</p>
+
+        <a href="{% url 'newsletter_update' newsletter.id %}">Edit</a>
+        |
+        <a href="{% url 'newsletter_delete' newsletter.id %}">Delete</a>
+    </div>
+{% empty %}
+    <p>No newsletters available.</p>
+{% endfor %}
+{% endblock %}
+'@ | Set-Content news\templates\news\newsletter_list.html

@@ -1,0 +1,19 @@
+@'
+{% extends "news/base.html" %}
+
+{% block content %}
+<h1>Journalists</h1>
+
+{% for journalist in journalists %}
+    <div>
+        <h2>{{ journalist.username }}</h2>
+
+        {% if user.role == "reader" %}
+            <a href="{% url 'subscribe_journalist' journalist.id %}">Subscribe</a>
+        {% endif %}
+    </div>
+{% empty %}
+    <p>No journalists available.</p>
+{% endfor %}
+{% endblock %}
+'@ | Set-Content news\templates\news\journalist_list.html

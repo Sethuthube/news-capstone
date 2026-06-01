@@ -1,0 +1,18 @@
+@'
+{% extends "news/base.html" %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Save Newsletter</button>
+</form>
+
+<p>
+    <a href="{% url 'newsletter_list' %}">Back to Newsletters</a>
+</p>
+{% endblock %}
+'@ | Set-Content news\templates\news\newsletter_form.html

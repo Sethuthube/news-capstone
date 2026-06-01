@@ -1,0 +1,14 @@
+{% extends "news/base.html" %}
+
+{% block content %}
+<h1>Reader Newsletters</h1>
+
+{% for newsletter in newsletters %}
+    <div>
+        <h2>{{ newsletter.title }}</h2>
+        <p>{{ newsletter.description }}</p>
+    </div>
+{% empty %}
+    <p>No newsletters available.</p>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "news/base.html" %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Save Article</button>
+</form>
+
+<p>
+    <a href="{% url 'article_list' %}">Back to Articles</a>
+</p>
+{% endblock %}

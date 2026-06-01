@@ -14,7 +14,12 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .forms import RegisterForm
+from .forms import (
+    RegisterForm,
+    ArticleForm,
+    NewsletterForm,
+    PublisherForm,
+)
 from .models import (
     Article,
     ApprovedArticleLog,
@@ -413,4 +418,317 @@ def approved_article_log_api(request):
     return Response(
         {'message': 'Approved article logged successfully.'},
         status=status.HTTP_201_CREATED
+    )
+
+@login_required
+def article_create(request):
+    """
+    Allow journalists and editors to create a new article.
+    """
+    if request.user.role not in ['journalist', 'editor'] and not request.user.is_superuser:
+        return HttpResponseForbidden('You are not allowed to create articles.')
+
+    if request.method == 'POST':
+        form = ArticleForm(request.POST)
+        if form.is_valid():
+            article = form.save(commit=False)
+            article.author = request.user
+            article.approved = False
+            article.save()
+            form.save_m2m()
+            return redirect('article_list')
+    else:
+        form = ArticleForm()
+
+    return render(
+        request,
+        'news/article_form.html',
+        {'form': form, 'title': 'Create Article'}
+    )
+
+
+@login_required
+def article_update(request, article_id):
+    """
+    Allow article authors, editors, or admins to update an article.
+    """
+    article = get_object_or_404(Article, id=article_id)
+
+    allowed_user = article.author == request.user
+    allowed_role = request.user.role == 'editor' or request.user.is_superuser
+
+    if not allowed_user and not allowed_role:
+        return HttpResponseForbidden('You are not allowed to edit this article.')
+
+    if request.method == 'POST':
+        form = ArticleForm(request.POST, instance=article)
+        if form.is_valid():
+            form.save()
+            return redirect('article_detail', article_id=article.id)
+    else:
+        form = ArticleForm(instance=article)
+
+    return render(
+        request,
+        'news/article_form.html',
+        {'form': form, 'title': 'Update Article'}
+    )
+
+
+@login_required
+def article_delete(request, article_id):
+    """
+    Allow article authors, editors, or admins to delete an article.
+    """
+    article = get_object_or_404(Article, id=article_id)
+
+    allowed_user = article.author == request.user
+    allowed_role = request.user.role == 'editor' or request.user.is_superuser
+
+    if not allowed_user and not allowed_role:
+        return HttpResponseForbidden('You are not allowed to delete this article.')
+
+    if request.method == 'POST':
+        article.delete()
+        return redirect('article_list')
+
+    return render(
+        request,
+        'news/article_confirm_delete.html',
+        {'article': article}
+    )
+
+
+@login_required
+def newsletter_list(request):
+    """
+    Display a list of newsletters.
+    """
+    newsletters = Newsletter.objects.all().order_by('-created_at')
+
+    return render(
+        request,
+        'news/newsletter_list.html',
+        {'newsletters': newsletters}
+    )
+
+
+@login_required
+def newsletter_create(request):
+    """
+    Allow journalists and editors to create newsletters.
+    """
+    if request.user.role not in ['journalist', 'editor'] and not request.user.is_superuser:
+        return HttpResponseForbidden('You are not allowed to create newsletters.')
+
+    if request.method == 'POST':
+        form = NewsletterForm(request.POST)
+        if form.is_valid():
+            newsletter = form.save(commit=False)
+            newsletter.author = request.user
+            newsletter.save()
+            form.save_m2m()
+            return redirect('newsletter_list')
+    else:
+        form = NewsletterForm()
+
+    return render(
+        request,
+        'news/newsletter_form.html',
+        {'form': form, 'title': 'Create Newsletter'}
+    )
+
+
+@login_required
+def newsletter_update(request, newsletter_id):
+    """
+    Allow newsletter authors, editors, or admins to update newsletters.
+    """
+    newsletter = get_object_or_404(Newsletter, id=newsletter_id)
+
+    allowed_user = newsletter.author == request.user
+    allowed_role = request.user.role == 'editor' or request.user.is_superuser
+
+    if not allowed_user and not allowed_role:
+        return HttpResponseForbidden('You are not allowed to edit this newsletter.')
+
+    if request.method == 'POST':
+        form = NewsletterForm(request.POST, instance=newsletter)
+        if form.is_valid():
+            form.save()
+            return redirect('newsletter_list')
+    else:
+        form = NewsletterForm(instance=newsletter)
+
+    return render(
+        request,
+        'news/newsletter_form.html',
+        {'form': form, 'title': 'Update Newsletter'}
+    )
+
+
+@login_required
+def newsletter_delete(request, newsletter_id):
+    """
+    Allow newsletter authors, editors, or admins to delete newsletters.
+    """
+    newsletter = get_object_or_404(Newsletter, id=newsletter_id)
+
+    allowed_user = newsletter.author == request.user
+    allowed_role = request.user.role == 'editor' or request.user.is_superuser
+
+    if not allowed_user and not allowed_role:
+        return HttpResponseForbidden('You are not allowed to delete this newsletter.')
+
+    if request.method == 'POST':
+        newsletter.delete()
+        return redirect('newsletter_list')
+
+    return render(
+        request,
+        'news/newsletter_confirm_delete.html',
+        {'newsletter': newsletter}
+    )
+
+
+@login_required
+def publisher_list(request):
+    """
+    Display a list of publishers.
+    """
+    publishers = Publisher.objects.all()
+
+    return render(
+        request,
+        'news/publisher_list.html',
+        {'publishers': publishers}
+    )
+
+
+@login_required
+def publisher_create(request):
+    """
+    Allow editors and admins to create publishers.
+    """
+    if request.user.role != 'editor' and not request.user.is_superuser:
+        return HttpResponseForbidden('You are not allowed to create publishers.')
+
+    if request.method == 'POST':
+        form = PublisherForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('publisher_list')
+    else:
+        form = PublisherForm()
+
+    return render(
+        request,
+        'news/publisher_form.html',
+        {'form': form, 'title': 'Create Publisher'}
+    )
+
+
+@login_required
+def publisher_update(request, publisher_id):
+    """
+    Allow editors and admins to update publishers.
+    """
+    if request.user.role != 'editor' and not request.user.is_superuser:
+        return HttpResponseForbidden('You are not allowed to edit publishers.')
+
+    publisher = get_object_or_404(Publisher, id=publisher_id)
+
+    if request.method == 'POST':
+        form = PublisherForm(request.POST, instance=publisher)
+        if form.is_valid():
+            form.save()
+            return redirect('publisher_list')
+    else:
+        form = PublisherForm(instance=publisher)
+
+    return render(
+        request,
+        'news/publisher_form.html',
+        {'form': form, 'title': 'Update Publisher'}
+    )
+
+
+@login_required
+def publisher_delete(request, publisher_id):
+    """
+    Allow editors and admins to delete publishers.
+    """
+    if request.user.role != 'editor' and not request.user.is_superuser:
+        return HttpResponseForbidden('You are not allowed to delete publishers.')
+
+    publisher = get_object_or_404(Publisher, id=publisher_id)
+
+    if request.method == 'POST':
+        publisher.delete()
+        return redirect('publisher_list')
+
+    return render(
+        request,
+        'news/publisher_confirm_delete.html',
+        {'publisher': publisher}
+    )
+
+
+@login_required
+def journalist_list(request):
+    """
+    Display journalists so readers can subscribe to them.
+    """
+    journalists = CustomUser.objects.filter(role='journalist')
+
+    return render(
+        request,
+        'news/journalist_list.html',
+        {'journalists': journalists}
+    )
+
+
+@login_required
+def subscribe_journalist(request, journalist_id):
+    """
+    Allow readers to subscribe to a journalist when supported by the user model.
+    """
+    if request.user.role != 'reader' and not request.user.is_superuser:
+        return HttpResponseForbidden('Only readers can subscribe.')
+
+    journalist = get_object_or_404(CustomUser, id=journalist_id, role='journalist')
+
+    if hasattr(request.user, 'subscribed_journalists'):
+        request.user.subscribed_journalists.add(journalist)
+
+    return redirect('journalist_list')
+
+
+@login_required
+def subscribe_publisher(request, publisher_id):
+    """
+    Allow readers to subscribe to a publisher when supported by the user model.
+    """
+    if request.user.role != 'reader' and not request.user.is_superuser:
+        return HttpResponseForbidden('Only readers can subscribe.')
+
+    publisher = get_object_or_404(Publisher, id=publisher_id)
+
+    if hasattr(request.user, 'subscribed_publishers'):
+        request.user.subscribed_publishers.add(publisher)
+
+    return redirect('publisher_list')
+
+
+@login_required
+def reader_newsletters(request):
+    """
+    Display newsletters for readers.
+    """
+    newsletters = Newsletter.objects.all().order_by('-created_at')
+
+    return render(
+        request,
+        'news/reader_newsletters.html',
+        {'newsletters': newsletters}
     )
