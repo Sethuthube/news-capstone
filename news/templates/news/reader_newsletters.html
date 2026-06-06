@@ -1,14 +1,46 @@
-{% extends "news/base.html" %}
+{% extends 'news/base.html' %}
 
 {% block content %}
-<h1>Reader Newsletters</h1>
+<div class="container mt-4">
+    <h1>Reader Newsletters</h1>
 
-{% for newsletter in newsletters %}
-    <div>
-        <h2>{{ newsletter.title }}</h2>
-        <p>{{ newsletter.description }}</p>
-    </div>
-{% empty %}
-    <p>No newsletters available.</p>
-{% endfor %}
+    <p class="text-muted">
+        View newsletters curated by journalists and editors.
+    </p>
+
+    {% if newsletters %}
+        <div class="row">
+            {% for newsletter in newsletters %}
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ newsletter.title }}</h5>
+
+                            <p class="card-text">
+                                {{ newsletter.description|truncatewords:35 }}
+                            </p>
+
+                            <p class="text-muted small">
+                                Author: {{ newsletter.author.username }}
+                                | Articles: {{ newsletter.articles.count }}
+                            </p>
+
+                            {% if newsletter.articles.all %}
+                                <ul>
+                                    {% for article in newsletter.articles.all %}
+                                        {% if article.approved %}
+                                            <li>{{ article.title }}</li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No newsletters are available yet.</p>
+    {% endif %}
+</div>
 {% endblock %}

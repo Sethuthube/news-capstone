@@ -1,82 +1,143 @@
-{% extends "news/base.html" %}
+{% extends 'news/base.html' %}
 
 {% block content %}
-<div class="mb-4">
+<div class="container mt-4">
     <h1>Reader Dashboard</h1>
 
-    <p>
-        <a href="{% url 'article_list' %}">View Articles</a>
-        |
-        <a href="{% url 'reader_newsletters' %}">View Newsletters</a>
-        |
-        <a href="{% url 'journalist_list' %}">Subscribe to Journalists</a>
-        |
-        <a href="{% url 'publisher_list' %}">Subscribe to Publishers</a>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} mt-3" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <p class="text-muted">
+        Welcome, {{ request.user.username }}. You can view approved articles,
+        newsletters, and subscribe to publishers or journalists.
     </p>
-</div>
 
+    <hr>
 
-<div class="row g-4 mb-5">
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h5>Approved Articles</h5>
-                <p class="text-muted">Read articles approved by editors.</p>
-                <a href="{% url 'article_list' %}" class="btn btn-primary btn-sm">
-                    Browse Articles
-                </a>
-            </div>
-        </div>
-    </div>
+    <h2>Approved Articles</h2>
 
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h5>Newsletters</h5>
-                <p class="text-muted">View curated newsletters from journalists.</p>
-                <span class="badge bg-secondary">
-                    {{ newsletters|length }} Available
-                </span>
-            </div>
-        </div>
-    </div>
+    {% if articles %}
+        <div class="row">
+            {% for article in articles %}
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ article.title }}</h5>
 
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h5>Subscriptions</h5>
-                <p class="text-muted">Follow publishers and journalists.</p>
-                <span class="badge bg-success">Reader Access</span>
-            </div>
-        </div>
-    </div>
-</div>
+                            <p class="card-text">
+                                {{ article.content|truncatewords:30 }}
+                            </p>
 
-<h3 class="fw-bold mb-3">Latest Approved Articles</h3>
+                            <p class="text-muted small">
+                                By {{ article.author.username }}
+                                {% if article.publisher %}
+                                    | Publisher: {{ article.publisher.name }}
+                                {% endif %}
+                            </p>
 
-<div class="row g-4">
-    {% for article in articles %}
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <h5>{{ article.title }}</h5>
-                    <p class="text-muted small">
-                        By {{ article.author }} • {{ article.created_at|date:"d M Y" }}
-                    </p>
-                    <p>{{ article.content|truncatewords:25 }}</p>
-                    <a href="{% url 'article_detail' article.id %}" class="btn btn-outline-primary btn-sm">
-                        Read Article
-                    </a>
+                            <a href="{% url 'article_detail' article.id %}" class="btn btn-sm btn-primary">
+                                Read Article
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            {% endfor %}
         </div>
-    {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">
-                No approved articles are available yet.
-            </div>
-        </div>
-    {% endfor %}
-</div>
+    {% else %}
+        <p>No approved articles are available yet.</p>
+    {% endif %}
 
+    <hr>
+
+    <h2>Newsletters</h2>
+
+    {% if newsletters %}
+        <div class="row">
+            {% for newsletter in newsletters %}
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ newsletter.title }}</h5>
+
+                            <p class="card-text">
+                                {{ newsletter.description|truncatewords:30 }}
+                            </p>
+
+                            <p class="text-muted small">
+                                By {{ newsletter.author.username }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No newsletters are available yet.</p>
+    {% endif %}
+
+    <hr>
+
+    <h2>Subscribe to Publishers</h2>
+
+    {% if publishers %}
+        <div class="row">
+            {% for publisher in publishers %}
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ publisher.name }}</h5>
+
+                            <p class="card-text">
+                                {{ publisher.description|default:"No description available."|truncatewords:20 }}
+                            </p>
+
+                            {% if publisher in request.user.subscribed_publishers.all %}
+                                <span class="badge bg-success">Subscribed</span>
+                            {% else %}
+                                <a href="{% url 'subscribe_publisher' publisher.id %}" class="btn btn-sm btn-outline-primary">
+                                    Subscribe
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No publishers are available yet.</p>
+    {% endif %}
+
+    <hr>
+
+    <h2>Subscribe to Journalists</h2>
+
+    {% if journalists %}
+        <div class="row">
+            {% for journalist in journalists %}
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ journalist.username }}</h5>
+
+                            {% if journalist in request.user.subscribed_journalists.all %}
+                                <span class="badge bg-success">Subscribed</span>
+                            {% else %}
+                                <a href="{% url 'subscribe_journalist' journalist.id %}" class="btn btn-sm btn-outline-primary">
+                                    Subscribe
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No journalists are available yet.</p>
+    {% endif %}
+</div>
 {% endblock %}

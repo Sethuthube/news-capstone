@@ -1,5 +1,9 @@
 import requests
 
+from functools import wraps
+
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
@@ -15,14 +19,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .forms import (
-    RegisterForm,
     ArticleForm,
     NewsletterForm,
     PublisherForm,
+    RegisterForm,
 )
 from .models import (
-    Article,
     ApprovedArticleLog,
+    Article,
     CustomUser,
     Newsletter,
     Publisher,
@@ -35,12 +39,14 @@ from .serializers import (
     UserSerializer,
 )
 
+
 def home(request):
     """Display the public home page."""
     return render(request, 'news/home.html')
 
 
 def register_view(request):
+    """Register a new user and log them in."""
     if request.method == 'POST':
         form = RegisterForm(request.POST)
 
@@ -70,12 +76,14 @@ def login_view(request):
 
 
 def logout_view(request):
+    """Log out the current user."""
     logout(request)
     return redirect('home')
 
 
 @login_required
 def dashboard_view(request):
+    """Send each user to the correct dashboard for their role."""
     if request.user.role == 'reader':
         return redirect('reader_dashboard')
 
@@ -84,20 +92,26 @@ def dashboard_view(request):
 
     if request.user.role == 'editor':
         return redirect('editor_dashboard')
-    
-    if request.user.role == 'publisher':
-        return redirect('publisher_dashboard')
 
     return redirect('home')
 
 
 def role_required(required_role):
+    """
+    Restrict a view to users with a specific role.
+
+    Superusers are allowed through so the project can still be tested easily
+    from the admin account.
+    """
     def decorator(view_func):
+        @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            if (
+            user_has_role = (
                 request.user.is_authenticated
                 and request.user.role == required_role
-            ):
+            )
+
+            if user_has_role or request.user.is_superuser:
                 return view_func(request, *args, **kwargs)
 
             return HttpResponseForbidden(
@@ -112,6 +126,7 @@ def role_required(required_role):
 @login_required
 @role_required('reader')
 def reader_dashboard(request):
+    """Display the reader dashboard."""
     articles = Article.objects.filter(approved=True).order_by('-created_at')
     newsletters = Newsletter.objects.all().order_by('-created_at')
     publishers = Publisher.objects.all()
@@ -132,7 +147,7 @@ def reader_dashboard(request):
 @login_required
 @role_required('journalist')
 def journalist_dashboard(request):
-    """Display the journalist dashboard and submitted articles."""
+    """Display the journalist dashboard and their own content."""
     articles = Article.objects.filter(author=request.user).order_by(
         '-created_at'
     )
@@ -173,50 +188,63 @@ def editor_dashboard(request):
 
 def notify_article_approval(article, request=None):
     """
-    Notify subscribers and log approved articles to the internal API.
-    """
+    Notify subscribed readers when an article is approved.
 
-    subscriber_emails = []
+    The task allows the approval logic to happen directly in the approval view
+    instead of Django signals. This function supports that approach.
+
+    It checks:
+    1. Readers subscribed to the article publisher.
+    2. Readers subscribed to the article journalist/author.
+
+    It also logs the approved article in the ApprovedArticleLog model.
+    """
+    subscriber_emails = set()
 
     if article.publisher:
-        publisher_subscribers = article.publisher.subscribers.all()
-        subscriber_emails += [
-            user.email for user in publisher_subscribers if user.email
-        ]
+        publisher_subscribers = CustomUser.objects.filter(
+            role='reader',
+            subscribed_publishers=article.publisher
+        )
 
-    journalist_subscribers = article.author.subscribers_to_journalist.all()
-    subscriber_emails += [
-        user.email for user in journalist_subscribers if user.email
-    ]
+        for user in publisher_subscribers:
+            if user.email:
+                subscriber_emails.add(user.email)
+
+    if article.author:
+        journalist_subscribers = CustomUser.objects.filter(
+            role='reader',
+            subscribed_journalists=article.author
+        )
+
+        for user in journalist_subscribers:
+            if user.email:
+                subscriber_emails.add(user.email)
 
     if subscriber_emails:
         send_mail(
             subject=f'New approved article: {article.title}',
-            message=article.content,
-            from_email=None,
-            recipient_list=list(set(subscriber_emails)),
-            fail_silently=True,
+            message=(
+                f'A new article has been approved and published.\n\n'
+                f'Title: {article.title}\n\n'
+                f'{article.content}'
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=list(subscriber_emails),
+            fail_silently=False,
         )
 
-    ApprovedArticleLog.objects.create(article=article)
+    ApprovedArticleLog.objects.get_or_create(article=article)
 
     if request:
-        api_url = request.build_absolute_uri('/api/approved/')
+        messages.success(
+            request,
+            f'Article "{article.title}" was approved and subscribers were notified.'
+        )
 
-        try:
-            requests.post(
-                api_url,
-                json={'article_id': article.id},
-                timeout=5,
-            )
-        except requests.RequestException:
-            pass
-        
+
 def article_list(request):
-    """
-    Show all approved articles to readers.
-    """
-
+    """Show all approved articles to readers."""
     articles = Article.objects.filter(approved=True).order_by('-created_at')
 
     return render(
@@ -227,10 +255,7 @@ def article_list(request):
 
 
 def article_detail(request, article_id):
-    """
-    Show one approved article.
-    """
-
+    """Show one approved article."""
     article = get_object_or_404(
         Article,
         id=article_id,
@@ -246,10 +271,7 @@ def article_detail(request, article_id):
 
 @login_required
 def editor_review(request):
-    """
-    Allow editors to review unapproved articles.
-    """
-
+    """Allow editors to review unapproved articles."""
     if request.user.role != 'editor' and not request.user.is_superuser:
         return redirect('article_list')
 
@@ -265,10 +287,7 @@ def editor_review(request):
 @login_required
 @require_POST
 def approve_article(request, article_id):
-    """
-    Allow editors to approve articles.
-    """
-
+    """Allow editors to approve articles from the web interface."""
     if request.user.role != 'editor' and not request.user.is_superuser:
         return redirect('article_list')
 
@@ -280,16 +299,19 @@ def approve_article(request, article_id):
 
     return redirect(reverse('editor_review'))
 
-class ArticleViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for articles.
-    """
 
+class ArticleViewSet(viewsets.ModelViewSet):
+    """API endpoint for articles."""
     serializer_class = ArticleSerializer
     permission_classes = [ArticlePermission]
 
     def get_queryset(self):
         user = self.request.user
+
+        if not user.is_authenticated:
+            return Article.objects.filter(approved=True).order_by(
+                '-created_at'
+            )
 
         if user.is_superuser or user.role == 'editor':
             return Article.objects.all().order_by('-created_at')
@@ -304,34 +326,39 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='subscribed')
     def subscribed(self, request):
-        """
-        Return approved articles from the reader's subscriptions.
-        """
-
+        """Return approved articles from the reader's subscriptions."""
         user = request.user
+
+        if user.role != 'reader' and not user.is_superuser:
+            return Response(
+                {'error': 'Only readers can view subscribed articles.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         publisher_ids = user.subscribed_publishers.values_list(
             'id',
             flat=True
         )
-
         journalist_ids = user.subscribed_journalists.values_list(
             'id',
             flat=True
         )
 
-        articles = Article.objects.filter(
+        publisher_articles = Article.objects.filter(
             approved=True,
             publisher_id__in=publisher_ids
-        ) | Article.objects.filter(
+        )
+
+        journalist_articles = Article.objects.filter(
             approved=True,
             author_id__in=journalist_ids
         )
 
-        serializer = self.get_serializer(
-            articles.distinct().order_by('-created_at'),
-            many=True
-        )
+        articles = (
+            publisher_articles | journalist_articles
+        ).distinct().order_by('-created_at')
+
+        serializer = self.get_serializer(articles, many=True)
 
         return Response(serializer.data)
 
@@ -342,10 +369,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
         url_path='approve'
     )
     def approve(self, request, pk=None):
-        """
-        Allow editors to approve articles from the API.
-        """
-
+        """Allow editors to approve articles from the API."""
         article = self.get_object()
         article.approved = True
         article.save()
@@ -358,20 +382,14 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
 
 class PublisherViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for publishers.
-    """
-
+    """API endpoint for publishers."""
     queryset = Publisher.objects.all()
     serializer_class = PublisherSerializer
     permission_classes = [IsAuthenticated]
 
 
 class NewsletterViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint for newsletters.
-    """
-
+    """API endpoint for newsletters."""
     queryset = Newsletter.objects.all().order_by('-created_at')
     serializer_class = NewsletterSerializer
     permission_classes = [IsAuthenticated]
@@ -381,10 +399,7 @@ class NewsletterViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Read-only API endpoint for users.
-    """
-
+    """Read-only API endpoint for users."""
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
@@ -393,10 +408,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def approved_article_log_api(request):
-    """
-    Internal API endpoint to log approved articles.
-    """
-
+    """Internal API endpoint to log approved articles."""
     article_id = request.data.get('article_id')
 
     if not article_id:
@@ -413,29 +425,35 @@ def approved_article_log_api(request):
             status=status.HTTP_404_NOT_FOUND
         )
 
-    ApprovedArticleLog.objects.create(article=article)
+    ApprovedArticleLog.objects.get_or_create(article=article)
 
     return Response(
         {'message': 'Approved article logged successfully.'},
         status=status.HTTP_201_CREATED
     )
 
+
 @login_required
 def article_create(request):
-    """
-    Allow journalists and editors to create a new article.
-    """
-    if request.user.role not in ['journalist', 'editor'] and not request.user.is_superuser:
-        return HttpResponseForbidden('You are not allowed to create articles.')
+    """Allow journalists and editors to create a new article."""
+    allowed_roles = ['journalist', 'editor']
+
+    if request.user.role not in allowed_roles and not request.user.is_superuser:
+        return HttpResponseForbidden(
+            'You are not allowed to create articles.'
+        )
 
     if request.method == 'POST':
         form = ArticleForm(request.POST)
+
         if form.is_valid():
             article = form.save(commit=False)
             article.author = request.user
             article.approved = False
             article.save()
             form.save_m2m()
+
+            messages.success(request, 'Article submitted for review.')
             return redirect('article_list')
     else:
         form = ArticleForm()
@@ -449,21 +467,23 @@ def article_create(request):
 
 @login_required
 def article_update(request, article_id):
-    """
-    Allow article authors, editors, or admins to update an article.
-    """
+    """Allow article authors, editors, or admins to update an article."""
     article = get_object_or_404(Article, id=article_id)
 
     allowed_user = article.author == request.user
     allowed_role = request.user.role == 'editor' or request.user.is_superuser
 
     if not allowed_user and not allowed_role:
-        return HttpResponseForbidden('You are not allowed to edit this article.')
+        return HttpResponseForbidden(
+            'You are not allowed to edit this article.'
+        )
 
     if request.method == 'POST':
         form = ArticleForm(request.POST, instance=article)
+
         if form.is_valid():
             form.save()
+            messages.success(request, 'Article updated successfully.')
             return redirect('article_detail', article_id=article.id)
     else:
         form = ArticleForm(instance=article)
@@ -477,19 +497,20 @@ def article_update(request, article_id):
 
 @login_required
 def article_delete(request, article_id):
-    """
-    Allow article authors, editors, or admins to delete an article.
-    """
+    """Allow article authors, editors, or admins to delete an article."""
     article = get_object_or_404(Article, id=article_id)
 
     allowed_user = article.author == request.user
     allowed_role = request.user.role == 'editor' or request.user.is_superuser
 
     if not allowed_user and not allowed_role:
-        return HttpResponseForbidden('You are not allowed to delete this article.')
+        return HttpResponseForbidden(
+            'You are not allowed to delete this article.'
+        )
 
     if request.method == 'POST':
         article.delete()
+        messages.success(request, 'Article deleted successfully.')
         return redirect('article_list')
 
     return render(
@@ -501,9 +522,7 @@ def article_delete(request, article_id):
 
 @login_required
 def newsletter_list(request):
-    """
-    Display a list of newsletters.
-    """
+    """Display a list of newsletters."""
     newsletters = Newsletter.objects.all().order_by('-created_at')
 
     return render(
@@ -515,19 +534,24 @@ def newsletter_list(request):
 
 @login_required
 def newsletter_create(request):
-    """
-    Allow journalists and editors to create newsletters.
-    """
-    if request.user.role not in ['journalist', 'editor'] and not request.user.is_superuser:
-        return HttpResponseForbidden('You are not allowed to create newsletters.')
+    """Allow journalists and editors to create newsletters."""
+    allowed_roles = ['journalist', 'editor']
+
+    if request.user.role not in allowed_roles and not request.user.is_superuser:
+        return HttpResponseForbidden(
+            'You are not allowed to create newsletters.'
+        )
 
     if request.method == 'POST':
         form = NewsletterForm(request.POST)
+
         if form.is_valid():
             newsletter = form.save(commit=False)
             newsletter.author = request.user
             newsletter.save()
             form.save_m2m()
+
+            messages.success(request, 'Newsletter created successfully.')
             return redirect('newsletter_list')
     else:
         form = NewsletterForm()
@@ -541,21 +565,23 @@ def newsletter_create(request):
 
 @login_required
 def newsletter_update(request, newsletter_id):
-    """
-    Allow newsletter authors, editors, or admins to update newsletters.
-    """
+    """Allow newsletter authors, editors, or admins to update newsletters."""
     newsletter = get_object_or_404(Newsletter, id=newsletter_id)
 
     allowed_user = newsletter.author == request.user
     allowed_role = request.user.role == 'editor' or request.user.is_superuser
 
     if not allowed_user and not allowed_role:
-        return HttpResponseForbidden('You are not allowed to edit this newsletter.')
+        return HttpResponseForbidden(
+            'You are not allowed to edit this newsletter.'
+        )
 
     if request.method == 'POST':
         form = NewsletterForm(request.POST, instance=newsletter)
+
         if form.is_valid():
             form.save()
+            messages.success(request, 'Newsletter updated successfully.')
             return redirect('newsletter_list')
     else:
         form = NewsletterForm(instance=newsletter)
@@ -569,19 +595,20 @@ def newsletter_update(request, newsletter_id):
 
 @login_required
 def newsletter_delete(request, newsletter_id):
-    """
-    Allow newsletter authors, editors, or admins to delete newsletters.
-    """
+    """Allow newsletter authors, editors, or admins to delete newsletters."""
     newsletter = get_object_or_404(Newsletter, id=newsletter_id)
 
     allowed_user = newsletter.author == request.user
     allowed_role = request.user.role == 'editor' or request.user.is_superuser
 
     if not allowed_user and not allowed_role:
-        return HttpResponseForbidden('You are not allowed to delete this newsletter.')
+        return HttpResponseForbidden(
+            'You are not allowed to delete this newsletter.'
+        )
 
     if request.method == 'POST':
         newsletter.delete()
+        messages.success(request, 'Newsletter deleted successfully.')
         return redirect('newsletter_list')
 
     return render(
@@ -593,9 +620,7 @@ def newsletter_delete(request, newsletter_id):
 
 @login_required
 def publisher_list(request):
-    """
-    Display a list of publishers.
-    """
+    """Display a list of publishers."""
     publishers = Publisher.objects.all()
 
     return render(
@@ -607,16 +632,18 @@ def publisher_list(request):
 
 @login_required
 def publisher_create(request):
-    """
-    Allow editors and admins to create publishers.
-    """
+    """Allow editors and admins to create publishers."""
     if request.user.role != 'editor' and not request.user.is_superuser:
-        return HttpResponseForbidden('You are not allowed to create publishers.')
+        return HttpResponseForbidden(
+            'You are not allowed to create publishers.'
+        )
 
     if request.method == 'POST':
         form = PublisherForm(request.POST)
+
         if form.is_valid():
             form.save()
+            messages.success(request, 'Publisher created successfully.')
             return redirect('publisher_list')
     else:
         form = PublisherForm()
@@ -630,18 +657,20 @@ def publisher_create(request):
 
 @login_required
 def publisher_update(request, publisher_id):
-    """
-    Allow editors and admins to update publishers.
-    """
+    """Allow editors and admins to update publishers."""
     if request.user.role != 'editor' and not request.user.is_superuser:
-        return HttpResponseForbidden('You are not allowed to edit publishers.')
+        return HttpResponseForbidden(
+            'You are not allowed to edit publishers.'
+        )
 
     publisher = get_object_or_404(Publisher, id=publisher_id)
 
     if request.method == 'POST':
         form = PublisherForm(request.POST, instance=publisher)
+
         if form.is_valid():
             form.save()
+            messages.success(request, 'Publisher updated successfully.')
             return redirect('publisher_list')
     else:
         form = PublisherForm(instance=publisher)
@@ -655,16 +684,17 @@ def publisher_update(request, publisher_id):
 
 @login_required
 def publisher_delete(request, publisher_id):
-    """
-    Allow editors and admins to delete publishers.
-    """
+    """Allow editors and admins to delete publishers."""
     if request.user.role != 'editor' and not request.user.is_superuser:
-        return HttpResponseForbidden('You are not allowed to delete publishers.')
+        return HttpResponseForbidden(
+            'You are not allowed to delete publishers.'
+        )
 
     publisher = get_object_or_404(Publisher, id=publisher_id)
 
     if request.method == 'POST':
         publisher.delete()
+        messages.success(request, 'Publisher deleted successfully.')
         return redirect('publisher_list')
 
     return render(
@@ -676,9 +706,7 @@ def publisher_delete(request, publisher_id):
 
 @login_required
 def journalist_list(request):
-    """
-    Display journalists so readers can subscribe to them.
-    """
+    """Display journalists so readers can subscribe to them."""
     journalists = CustomUser.objects.filter(role='journalist')
 
     return render(
@@ -690,41 +718,49 @@ def journalist_list(request):
 
 @login_required
 def subscribe_journalist(request, journalist_id):
-    """
-    Allow readers to subscribe to a journalist when supported by the user model.
-    """
+    """Allow readers to subscribe to a journalist."""
     if request.user.role != 'reader' and not request.user.is_superuser:
-        return HttpResponseForbidden('Only readers can subscribe.')
+        messages.error(request, 'Only readers can subscribe to journalists.')
+        return redirect('reader_dashboard')
 
-    journalist = get_object_or_404(CustomUser, id=journalist_id, role='journalist')
+    journalist = get_object_or_404(
+        CustomUser,
+        id=journalist_id,
+        role='journalist'
+    )
 
-    if hasattr(request.user, 'subscribed_journalists'):
-        request.user.subscribed_journalists.add(journalist)
+    request.user.subscribed_journalists.add(journalist)
 
-    return redirect('journalist_list')
+    messages.success(
+        request,
+        f'You have successfully subscribed to {journalist.username}.'
+    )
+
+    return redirect('reader_dashboard')
 
 
 @login_required
 def subscribe_publisher(request, publisher_id):
-    """
-    Allow readers to subscribe to a publisher when supported by the user model.
-    """
+    """Allow readers to subscribe to a publisher."""
     if request.user.role != 'reader' and not request.user.is_superuser:
-        return HttpResponseForbidden('Only readers can subscribe.')
+        messages.error(request, 'Only readers can subscribe to publishers.')
+        return redirect('reader_dashboard')
 
     publisher = get_object_or_404(Publisher, id=publisher_id)
 
-    if hasattr(request.user, 'subscribed_publishers'):
-        request.user.subscribed_publishers.add(publisher)
+    request.user.subscribed_publishers.add(publisher)
 
-    return redirect('publisher_list')
+    messages.success(
+        request,
+        f'You have successfully subscribed to {publisher.name}.'
+    )
+
+    return redirect('reader_dashboard')
 
 
 @login_required
 def reader_newsletters(request):
-    """
-    Display newsletters for readers.
-    """
+    """Display newsletters for readers."""
     newsletters = Newsletter.objects.all().order_by('-created_at')
 
     return render(

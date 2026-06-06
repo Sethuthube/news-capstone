@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 
 
@@ -10,6 +10,8 @@ class CustomUser(AbstractUser):
     - Reader: can view articles and newsletters.
     - Editor: can review, approve, update, and delete content.
     - Journalist: can create, update, and delete own content.
+
+    The user's Django group is automatically synced to match their role.
     """
 
     READER = 'reader'
@@ -22,12 +24,19 @@ class CustomUser(AbstractUser):
         (JOURNALIST, 'Journalist'),
     ]
 
+    email = models.EmailField(unique=True)
+
     role = models.CharField(
         max_length=20,
         choices=ROLE_CHOICES,
         default=READER
     )
 
+    # Reader-only fields:
+    # These are used only when role == 'reader'.
+    # If the user is a journalist or editor, these subscriptions are cleared
+    # in the save() method below. This satisfies the task requirement that
+    # journalist users should not keep reader subscription values.
     subscribed_publishers = models.ManyToManyField(
         'Publisher',
         blank=True,
@@ -41,13 +50,57 @@ class CustomUser(AbstractUser):
         related_name='subscribers_to_journalist'
     )
 
+    def save(self, *args, **kwargs):
+        """
+        Save the user and keep their group/role data consistent.
+
+        A ManyToManyField cannot literally store None. The practical Django
+        equivalent is to clear those relationships when they should not apply.
+
+        Therefore:
+        - Readers may have subscribed publishers and subscribed journalists.
+        - Journalists and editors have those reader-only fields cleared.
+        """
+        super().save(*args, **kwargs)
+
+        self.sync_role_group()
+
+        if self.role != self.READER:
+            self.subscribed_publishers.clear()
+            self.subscribed_journalists.clear()
+
+    def sync_role_group(self):
+        """
+        Put the user into the Django group matching their role.
+
+        This supports the task requirement that users should be assigned to
+        groups based on their role.
+        """
+        role_group_names = {
+            self.READER: 'Reader',
+            self.EDITOR: 'Editor',
+            self.JOURNALIST: 'Journalist',
+        }
+
+        group_name = role_group_names.get(self.role)
+
+        if not group_name:
+            return
+
+        group, created = Group.objects.get_or_create(name=group_name)
+
+        self.groups.clear()
+        self.groups.add(group)
+
     def __str__(self):
         return f'{self.username} ({self.role})'
 
 
 class Publisher(models.Model):
     """
-    Represents a publication that can have editors and journalists.
+    Represents a publication.
+
+    A publisher can have multiple editors and multiple journalists.
     """
 
     name = models.CharField(max_length=200)
@@ -72,8 +125,13 @@ class Publisher(models.Model):
 
 
 class Article(models.Model):
+    """
+    Represents a news article.
 
-    """Represents a news article submitted and managed by users."""
+    An article is written by a journalist. It may optionally belong to a
+    publisher. If publisher is blank, the article is treated as an independent
+    journalist article.
+    """
 
     title = models.CharField(max_length=255)
     content = models.TextField()
@@ -94,7 +152,11 @@ class Article(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
-    approved = models.BooleanField(default=False)
+
+    approved = models.BooleanField(
+        default=False,
+        help_text='Indicates whether the article has been approved by an editor.'
+    )
 
     def __str__(self):
         return self.title
@@ -103,6 +165,8 @@ class Article(models.Model):
 class Newsletter(models.Model):
     """
     Represents a curated collection of articles.
+
+    Newsletters are created by journalists and can contain many articles.
     """
 
     title = models.CharField(max_length=255)
@@ -128,7 +192,10 @@ class Newsletter(models.Model):
 
 class ApprovedArticleLog(models.Model):
     """
-    Stores records of approved articles posted to the internal API.
+    Stores records of approved articles.
+
+    This model acts as the internal logging endpoint target for approved
+    articles, matching the task requirement to log approved article activity.
     """
 
     article = models.ForeignKey(

@@ -1,22 +1,65 @@
-{% extends "news/base.html" %}
+{% extends 'news/base.html' %}
 
 {% block content %}
-<h1>Newsletters</h1>
+<div class="container mt-4">
+    <h1>Newsletters</h1>
 
-<p>
-    <a href="{% url 'newsletter_create' %}">Create Newsletter</a>
-</p>
+    <p class="text-muted">
+        Browse curated newsletters created by journalists and editors.
+    </p>
 
-{% for newsletter in newsletters %}
-    <div>
-        <h2>{{ newsletter.title }}</h2>
-        <p>{{ newsletter.description }}</p>
+    {% if user.is_authenticated %}
+        {% if user.role == 'journalist' or user.role == 'editor' or user.is_superuser %}
+            <a href="{% url 'newsletter_create' %}" class="btn btn-primary mb-3">
+                Create Newsletter
+            </a>
+        {% endif %}
+    {% endif %}
 
-        <a href="{% url 'newsletter_update' newsletter.id %}">Edit</a>
-        |
-        <a href="{% url 'newsletter_delete' newsletter.id %}">Delete</a>
-    </div>
-{% empty %}
-    <p>No newsletters available.</p>
-{% endfor %}
+    {% if newsletters %}
+        <div class="row">
+            {% for newsletter in newsletters %}
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ newsletter.title }}</h5>
+
+                            <p class="card-text">
+                                {{ newsletter.description|truncatewords:35 }}
+                            </p>
+
+                            <p class="text-muted small">
+                                Author: {{ newsletter.author.username }}
+                                | Created: {{ newsletter.created_at }}
+                                | Articles: {{ newsletter.articles.count }}
+                            </p>
+
+                            {% if newsletter.articles.all %}
+                                <ul>
+                                    {% for article in newsletter.articles.all %}
+                                        <li>{{ article.title }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+
+                            {% if user.is_authenticated %}
+                                {% if user.role == 'editor' or user.is_superuser or newsletter.author == user %}
+                                    <a href="{% url 'newsletter_update' newsletter.id %}" class="btn btn-sm btn-outline-secondary">
+                                        Edit
+                                    </a>
+
+                                    <a href="{% url 'newsletter_delete' newsletter.id %}" class="btn btn-sm btn-outline-danger">
+                                        Delete
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No newsletters are available yet.</p>
+    {% endif %}
+</div>
 {% endblock %}

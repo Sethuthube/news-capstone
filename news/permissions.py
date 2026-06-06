@@ -1,83 +1,81 @@
-from rest_framework.permissions import SAFE_METHODS, BasePermission
+from rest_framework import permissions
 
 
-class IsReader(BasePermission):
+class ArticlePermission(permissions.BasePermission):
     """
-    Allows access only to users with the reader role.
-    """
+    API permissions for articles.
 
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == 'reader'
-
-
-class IsEditor(BasePermission):
-    """
-    Allows access only to editors or superusers.
+    Rules:
+    - Readers can only view approved articles.
+    - Journalists can create articles.
+    - Journalists can edit/delete only their own articles.
+    - Editors can view, update, delete, and approve articles.
+    - Superusers can do everything.
     """
 
     def has_permission(self, request, view):
-        return (
-            request.user.is_authenticated
-            and (
-                request.user.role == 'editor'
-                or request.user.is_superuser
-            )
-        )
+        user = request.user
 
+        if not user or not user.is_authenticated:
+            return request.method in permissions.SAFE_METHODS
 
-class IsJournalist(BasePermission):
-    """
-    Allows access only to journalists.
-    """
+        if user.is_superuser:
+            return True
 
-    def has_permission(self, request, view):
-        return (
-            request.user.is_authenticated
-            and request.user.role == 'journalist'
-        )
-
-
-class ArticlePermission(BasePermission):
-    """
-    Role-based article API permissions.
-
-    Readers:
-    - Can only view approved articles.
-
-    Journalists:
-    - Can create articles.
-    - Can update and delete their own articles.
-
-    Editors:
-    - Can view, update, approve, and delete articles.
-    """
-
-    def has_permission(self, request, view):
-        if not request.user.is_authenticated:
-            return False
-
-        if request.method in SAFE_METHODS:
+        if request.method in permissions.SAFE_METHODS:
             return True
 
         if request.method == 'POST':
-            return request.user.role == 'journalist'
+            return user.role == 'journalist'
 
         if request.method in ['PUT', 'PATCH', 'DELETE']:
-            return request.user.role in ['editor', 'journalist']
+            return user.role in ['journalist', 'editor']
 
         return False
 
     def has_object_permission(self, request, view, obj):
-        if request.user.is_superuser:
+        user = request.user
+
+        if not user or not user.is_authenticated:
+            return (
+                request.method in permissions.SAFE_METHODS
+                and obj.approved
+            )
+
+        if user.is_superuser:
             return True
 
-        if request.method in SAFE_METHODS:
-            return obj.approved or request.user.role in ['editor', 'journalist']
+        if request.method in permissions.SAFE_METHODS:
+            if user.role == 'editor':
+                return True
 
-        if request.user.role == 'editor':
-            return True
+            if user.role == 'journalist':
+                return obj.author == user or obj.approved
 
-        if request.user.role == 'journalist':
-            return obj.author == request.user
+            return obj.approved
+
+        if request.method in ['PUT', 'PATCH', 'DELETE']:
+            if user.role == 'editor':
+                return True
+
+            if user.role == 'journalist':
+                return obj.author == user
 
         return False
+
+
+class IsEditor(permissions.BasePermission):
+    """
+    Allows access only to editors and superusers.
+
+    Used for article approval endpoints.
+    """
+
+    def has_permission(self, request, view):
+        user = request.user
+
+        return bool(
+            user
+            and user.is_authenticated
+            and (user.role == 'editor' or user.is_superuser)
+        )

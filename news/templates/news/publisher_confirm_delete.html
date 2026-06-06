@@ -1,16 +1,35 @@
-{% extends "news/base.html" %}
+{% extends 'news/base.html' %}
 
 {% block content %}
-<h1>Delete Publisher</h1>
+<div class="container mt-4">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h1>Delete Publisher</h1>
 
-<p>Are you sure you want to delete "{{ publisher.name }}"?</p>
+            <p>
+                Are you sure you want to delete this publisher?
+            </p>
 
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Yes, Delete</button>
-</form>
+            <h5>{{ publisher.name }}</h5>
 
-<p>
-    <a href="{% url 'publisher_list' %}">Cancel</a>
-</p>
+            <p class="text-muted">
+                This action cannot be undone. Articles connected to this
+                publisher will not be deleted, but their publisher field may
+                become empty.
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <button type="submit" class="btn btn-danger">
+                    Yes, Delete
+                </button>
+
+                <a href="{% url 'publisher_list' %}" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

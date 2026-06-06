@@ -1,16 +1,87 @@
-{% extends "news/base.html" %}
+{% extends 'news/base.html' %}
 
 {% block content %}
-<h1>{{ title }}</h1>
+<div class="container mt-4">
+    <h1>{{ title }}</h1>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+    <p class="text-muted">
+        Publishers can have multiple editors and journalists assigned to them.
+    </p>
 
-    <button type="submit">Save Publisher</button>
-</form>
+    <form method="post" novalidate>
+        {% csrf_token %}
 
-<p>
-    <a href="{% url 'publisher_list' %}">Back to Publishers</a>
-</p>
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="mb-3">
+            <label for="{{ form.name.id_for_label }}" class="form-label">
+                Publisher Name
+            </label>
+            {{ form.name }}
+
+            {% if form.name.errors %}
+                <div class="text-danger">
+                    {{ form.name.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.description.id_for_label }}" class="form-label">
+                Description
+            </label>
+            {{ form.description }}
+
+            {% if form.description.errors %}
+                <div class="text-danger">
+                    {{ form.description.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Editors
+            </label>
+
+            <div class="border rounded p-3">
+                {{ form.editors }}
+            </div>
+
+            {% if form.editors.errors %}
+                <div class="text-danger">
+                    {{ form.editors.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Journalists
+            </label>
+
+            <div class="border rounded p-3">
+                {{ form.journalists }}
+            </div>
+
+            {% if form.journalists.errors %}
+                <div class="text-danger">
+                    {{ form.journalists.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Save Publisher
+        </button>
+
+        <a href="{% url 'publisher_list' %}" class="btn btn-outline-secondary">
+            Cancel
+        </a>
+    </form>
+</div>
 {% endblock %}

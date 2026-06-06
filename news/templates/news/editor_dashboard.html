@@ -1,56 +1,127 @@
-{% extends "news/base.html" %}
+{% extends 'news/base.html' %}
 
 {% block content %}
-<div class="mb-4">
+<div class="container mt-4">
     <h1>Editor Dashboard</h1>
 
-    <p>
-        <a href="{% url 'article_list' %}">Manage Articles</a>
-        |
-        <a href="{% url 'newsletter_list' %}">Manage Newsletters</a>
-        |
-        <a href="{% url 'publisher_list' %}">Manage Publishers</a>
-        |
-        <a href="{% url 'editor_review' %}">Review Pending Articles</a>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} mt-3" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <p class="text-muted">
+        Welcome, {{ request.user.username }}. You can review, approve, update,
+        and delete articles and newsletters.
     </p>
-</div>
-<h2 class="mb-4">Editor Dashboard</h2>
 
-<h4>Pending Articles for Review</h4>
+    <div class="mb-3">
+        <a href="{% url 'editor_review' %}" class="btn btn-primary">
+            Review Pending Articles
+        </a>
 
-{% for article in pending_articles %}
-<div class="card mb-3">
-    <div class="card-body">
-        <h5>{{ article.title }}</h5>
-        <p>{{ article.content|truncatewords:30 }}</p>
-        <p><strong>Author:</strong> {{ article.author }}</p>
+        <a href="{% url 'article_create' %}" class="btn btn-outline-primary">
+            Create Article
+        </a>
 
-        <form method="post" action="{% url 'approve_article' article.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-success">
-                Approve Article
-            </button>
-        </form>
+        <a href="{% url 'newsletter_create' %}" class="btn btn-outline-primary">
+            Create Newsletter
+        </a>
+
+        <a href="{% url 'publisher_create' %}" class="btn btn-outline-primary">
+            Create Publisher
+        </a>
     </div>
+
+    <hr>
+
+    <h2>Pending Articles</h2>
+
+    {% if pending_articles %}
+        <div class="row">
+            {% for article in pending_articles %}
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ article.title }}</h5>
+
+                            <p class="card-text">
+                                {{ article.content|truncatewords:30 }}
+                            </p>
+
+                            <p class="text-muted small">
+                                By {{ article.author.username }}
+                                {% if article.publisher %}
+                                    | Publisher: {{ article.publisher.name }}
+                                {% endif %}
+                            </p>
+
+                            <form method="post" action="{% url 'approve_article' article.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    Approve Article
+                                </button>
+                            </form>
+
+                            <a href="{% url 'article_update' article.id %}" class="btn btn-sm btn-outline-secondary mt-2">
+                                Edit
+                            </a>
+
+                            <a href="{% url 'article_delete' article.id %}" class="btn btn-sm btn-outline-danger mt-2">
+                                Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No pending articles at the moment.</p>
+    {% endif %}
+
+    <hr>
+
+    <h2>Approved Articles</h2>
+
+    {% if approved_articles %}
+        <div class="row">
+            {% for article in approved_articles %}
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ article.title }}</h5>
+
+                            <p class="card-text">
+                                {{ article.content|truncatewords:30 }}
+                            </p>
+
+                            <p class="text-muted small">
+                                By {{ article.author.username }}
+                                {% if article.publisher %}
+                                    | Publisher: {{ article.publisher.name }}
+                                {% endif %}
+                            </p>
+
+                            <span class="badge bg-success">Approved</span>
+
+                            <div class="mt-2">
+                                <a href="{% url 'article_update' article.id %}" class="btn btn-sm btn-outline-secondary">
+                                    Edit
+                                </a>
+
+                                <a href="{% url 'article_delete' article.id %}" class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No approved articles yet.</p>
+    {% endif %}
 </div>
-{% empty %}
-<p>No pending articles to review.</p>
-{% endfor %}
-
-<hr>
-
-<h4>Approved Articles</h4>
-
-{% for article in approved_articles %}
-<div class="card mb-3">
-    <div class="card-body">
-        <h5>{{ article.title }}</h5>
-        <p>{{ article.content|truncatewords:25 }}</p>
-        <p><strong>Status:</strong> Approved</p>
-    </div>
-</div>
-{% empty %}
-<p>No approved articles yet.</p>
-{% endfor %}
-
 {% endblock %}

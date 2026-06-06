@@ -1,88 +1,120 @@
-{% extends "news/base.html" %}
+{% extends 'news/base.html' %}
 
 {% block content %}
-<div class="mb-4">
+<div class="container mt-4">
     <h1>Journalist Dashboard</h1>
 
-    <p>
-        <a href="{% url 'article_create' %}">Create Article</a>
-        |
-        <a href="{% url 'newsletter_create' %}">Create Newsletter</a>
-        |
-        <a href="{% url 'article_list' %}">View Articles</a>
-        |
-        <a href="{% url 'newsletter_list' %}">View Newsletters</a>
-    </p>
-</div>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} mt-3" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
-<div class="mb-4">
-    <h1 class="fw-bold">Journalist Dashboard</h1>
     <p class="text-muted">
-        Welcome, {{ request.user.username }}. Manage your articles and newsletters.
+        Welcome, {{ request.user.username }}. You can create articles and newsletters,
+        then submit your articles for editor approval.
     </p>
-</div>
 
-<div class="row g-4 mb-5">
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h5>Your Articles</h5>
-                <p class="text-muted">Create, edit, and manage your submitted articles.</p>
-                <span class="badge bg-primary">{{ articles|length }} Articles</span>
-            </div>
-        </div>
+    <div class="mb-3">
+        <a href="{% url 'article_create' %}" class="btn btn-primary">
+            Create Article
+        </a>
+
+        <a href="{% url 'newsletter_create' %}" class="btn btn-outline-primary">
+            Create Newsletter
+        </a>
+
+        <a href="{% url 'article_list' %}" class="btn btn-outline-secondary">
+            View Published Articles
+        </a>
     </div>
 
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h5>Your Newsletters</h5>
-                <p class="text-muted">Create curated newsletters using your articles.</p>
-                <span class="badge bg-secondary">{{ newsletters|length }} Newsletters</span>
-            </div>
-        </div>
-    </div>
+    <hr>
 
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h5>Approval Status</h5>
-                <p class="text-muted">Editors review articles before publication.</p>
-                <span class="badge bg-warning text-dark">Editorial Review</span>
-            </div>
-        </div>
-    </div>
-</div>
+    <h2>My Articles</h2>
 
-<h3 class="fw-bold mb-3">My Articles</h3>
+    {% if articles %}
+        <div class="row">
+            {% for article in articles %}
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ article.title }}</h5>
 
-<div class="row g-4">
-    {% for article in articles %}
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <h5>{{ article.title }}</h5>
+                            <p class="card-text">
+                                {{ article.content|truncatewords:30 }}
+                            </p>
 
-                    {% if article.approved %}
-                        <span class="badge bg-success mb-2">Approved</span>
-                    {% else %}
-                        <span class="badge bg-warning text-dark mb-2">Pending Review</span>
-                    {% endif %}
+                            <p class="text-muted small">
+                                {% if article.publisher %}
+                                    Publisher: {{ article.publisher.name }}
+                                {% else %}
+                                    Independent article
+                                {% endif %}
+                            </p>
 
-                    <p>{{ article.content|truncatewords:25 }}</p>
-                    <p class="text-muted small">
-                        Created {{ article.created_at|date:"d M Y" }}
-                    </p>
+                            {% if article.approved %}
+                                <span class="badge bg-success">Approved</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pending Approval</span>
+                            {% endif %}
+
+                            <div class="mt-2">
+                                <a href="{% url 'article_update' article.id %}" class="btn btn-sm btn-outline-secondary">
+                                    Edit
+                                </a>
+
+                                <a href="{% url 'article_delete' article.id %}" class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            {% endfor %}
         </div>
-    {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">
-                You have not created any articles yet.
-            </div>
-        </div>
-    {% endfor %}
-</div>
+    {% else %}
+        <p>You have not created any articles yet.</p>
+    {% endif %}
 
+    <hr>
+
+    <h2>My Newsletters</h2>
+
+    {% if newsletters %}
+        <div class="row">
+            {% for newsletter in newsletters %}
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ newsletter.title }}</h5>
+
+                            <p class="card-text">
+                                {{ newsletter.description|truncatewords:30 }}
+                            </p>
+
+                            <p class="text-muted small">
+                                Articles included: {{ newsletter.articles.count }}
+                            </p>
+
+                            <div class="mt-2">
+                                <a href="{% url 'newsletter_update' newsletter.id %}" class="btn btn-sm btn-outline-secondary">
+                                    Edit
+                                </a>
+
+                                <a href="{% url 'newsletter_delete' newsletter.id %}" class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>You have not created any newsletters yet.</p>
+    {% endif %}
+</div>
 {% endblock %}

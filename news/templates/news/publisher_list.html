@@ -1,26 +1,68 @@
-{% extends "news/base.html" %}
+{% extends 'news/base.html' %}
 
 {% block content %}
-<h1>Publishers</h1>
+<div class="container mt-4">
+    <h1>Publishers</h1>
 
-<p>
-    <a href="{% url 'publisher_create' %}">Create Publisher</a>
-</p>
+    <p class="text-muted">
+        View publishers that work with editors and journalists.
+    </p>
 
-{% for publisher in publishers %}
-    <div>
-        <h2>{{ publisher.name }}</h2>
-
-        <a href="{% url 'publisher_update' publisher.id %}">Edit</a>
-        |
-        <a href="{% url 'publisher_delete' publisher.id %}">Delete</a>
-
-        {% if user.role == "reader" %}
-            |
-            <a href="{% url 'subscribe_publisher' publisher.id %}">Subscribe</a>
+    {% if user.is_authenticated %}
+        {% if user.role == 'editor' or user.is_superuser %}
+            <a href="{% url 'publisher_create' %}" class="btn btn-primary mb-3">
+                Create Publisher
+            </a>
         {% endif %}
-    </div>
-{% empty %}
-    <p>No publishers available.</p>
-{% endfor %}
+    {% endif %}
+
+    {% if publishers %}
+        <div class="row">
+            {% for publisher in publishers %}
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ publisher.name }}</h5>
+
+                            <p class="card-text">
+                                {{ publisher.description|default:"No description available."|truncatewords:35 }}
+                            </p>
+
+                            <p class="text-muted small">
+                                Editors: {{ publisher.editors.count }}
+                                | Journalists: {{ publisher.journalists.count }}
+                            </p>
+
+                            {% if user.is_authenticated %}
+                                {% if user.role == 'reader' %}
+                                    {% if publisher in user.subscribed_publishers.all %}
+                                        <span class="badge bg-success">
+                                            Subscribed
+                                        </span>
+                                    {% else %}
+                                        <a href="{% url 'subscribe_publisher' publisher.id %}" class="btn btn-sm btn-outline-primary">
+                                            Subscribe
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if user.role == 'editor' or user.is_superuser %}
+                                    <a href="{% url 'publisher_update' publisher.id %}" class="btn btn-sm btn-outline-secondary">
+                                        Edit
+                                    </a>
+
+                                    <a href="{% url 'publisher_delete' publisher.id %}" class="btn btn-sm btn-outline-danger">
+                                        Delete
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No publishers are available yet.</p>
+    {% endif %}
+</div>
 {% endblock %}

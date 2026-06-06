@@ -1,18 +1,47 @@
 {% extends 'news/base.html' %}
 
 {% block content %}
-    <article>
-        <h2>{{ article.title }}</h2>
+<div class="container mt-4">
+    <article class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h1>{{ article.title }}</h1>
 
-        <p>
-            By {{ article.author.username }}
-            {% if article.publisher %}
-                for {{ article.publisher.name }}
+            <p class="text-muted">
+                Author: {{ article.author.username }}
+                {% if article.publisher %}
+                    | Publisher: {{ article.publisher.name }}
+                {% else %}
+                    | Independent journalist article
+                {% endif %}
+                | Created: {{ article.created_at }}
+            </p>
+
+            {% if article.approved %}
+                <span class="badge bg-success mb-3">Approved</span>
+            {% else %}
+                <span class="badge bg-warning text-dark mb-3">Pending Approval</span>
             {% endif %}
-        </p>
 
-        <p>{{ article.content }}</p>
+            <p class="mt-3">
+                {{ article.content|linebreaks }}
+            </p>
 
-        <p>Created at: {{ article.created_at }}</p>
+            <a href="{% url 'article_list' %}" class="btn btn-outline-secondary">
+                Back to Articles
+            </a>
+
+            {% if user.is_authenticated %}
+                {% if user.role == 'editor' or user.is_superuser or article.author == user %}
+                    <a href="{% url 'article_update' article.id %}" class="btn btn-outline-primary">
+                        Edit
+                    </a>
+
+                    <a href="{% url 'article_delete' article.id %}" class="btn btn-outline-danger">
+                        Delete
+                    </a>
+                {% endif %}
+            {% endif %}
+        </div>
     </article>
+</div>
 {% endblock %}
