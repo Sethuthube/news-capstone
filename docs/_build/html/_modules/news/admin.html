@@ -39,8 +39,14 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption" role="heading"><span class="caption-text">Project Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">news_capstone</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../news.html">news package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../news_project.html">news_project package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../manage.html">manage module</a></li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -70,8 +76,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.auth.admin</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserAdmin</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Article</span><span class="p">,</span>
     <span class="n">ApprovedArticleLog</span><span class="p">,</span>
+    <span class="n">Article</span><span class="p">,</span>
     <span class="n">CustomUser</span><span class="p">,</span>
     <span class="n">Newsletter</span><span class="p">,</span>
     <span class="n">Publisher</span><span class="p">,</span>
@@ -82,17 +88,63 @@
 <a class="viewcode-back" href="../../news.html#news.admin.CustomUserAdmin">[docs]</a>
 <span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">CustomUser</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CustomUserAdmin</span><span class="p">(</span><span class="n">UserAdmin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Admin configuration for the custom user model.</span>
+
+<span class="sd">    Adds the role and subscription fields to the Django admin.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">fieldsets</span> <span class="o">=</span> <span class="n">UserAdmin</span><span class="o">.</span><span class="n">fieldsets</span> <span class="o">+</span> <span class="p">(</span>
-        <span class="p">(</span><span class="s1">&#39;Role and Subscriptions&#39;</span><span class="p">,</span> <span class="p">{</span>
-            <span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="p">(</span>
-                <span class="s1">&#39;role&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;subscribed_publishers&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;subscribed_journalists&#39;</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="p">}),</span>
+        <span class="p">(</span>
+            <span class="s1">&#39;News Application Role Information&#39;</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s1">&#39;role&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;subscribed_publishers&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;subscribed_journalists&#39;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">},</span>
+        <span class="p">),</span>
     <span class="p">)</span>
 
-    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;username&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;role&#39;</span><span class="p">,</span> <span class="s1">&#39;is_staff&#39;</span><span class="p">)</span></div>
+    <span class="n">add_fieldsets</span> <span class="o">=</span> <span class="n">UserAdmin</span><span class="o">.</span><span class="n">add_fieldsets</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="p">(</span>
+            <span class="s1">&#39;News Application Role Information&#39;</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s1">&#39;email&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;role&#39;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">},</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;username&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;email&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;role&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;is_staff&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;is_superuser&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;role&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;is_staff&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;is_superuser&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;is_active&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;username&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;email&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">filter_horizontal</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;groups&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;user_permissions&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;subscribed_publishers&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;subscribed_journalists&#39;</span><span class="p">,</span>
+    <span class="p">]</span></div>
 
 
 
@@ -100,8 +152,23 @@
 <a class="viewcode-back" href="../../news.html#news.admin.PublisherAdmin">[docs]</a>
 <span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Publisher</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">PublisherAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
-    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,)</span>
-    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,)</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Admin configuration for publishers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">filter_horizontal</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;editors&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;journalists&#39;</span><span class="p">,</span>
+    <span class="p">]</span></div>
 
 
 
@@ -109,9 +176,34 @@
 <a class="viewcode-back" href="../../news.html#news.admin.ArticleAdmin">[docs]</a>
 <span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Article</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ArticleAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
-    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;author&#39;</span><span class="p">,</span> <span class="s1">&#39;publisher&#39;</span><span class="p">,</span> <span class="s1">&#39;approved&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">)</span>
-    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;approved&#39;</span><span class="p">,</span> <span class="s1">&#39;publisher&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">)</span>
-    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">)</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Admin configuration for articles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;author&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;publisher&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;approved&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;approved&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;publisher&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;content&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;author__username&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;publisher__name&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">readonly_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
+    <span class="p">]</span></div>
 
 
 
@@ -119,8 +211,34 @@
 <a class="viewcode-back" href="../../news.html#news.admin.NewsletterAdmin">[docs]</a>
 <span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Newsletter</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">NewsletterAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
-    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;author&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">)</span>
-    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">)</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Admin configuration for newsletters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;author&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;author&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;author__username&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">filter_horizontal</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;articles&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">readonly_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
+    <span class="p">]</span></div>
 
 
 
@@ -128,7 +246,26 @@
 <a class="viewcode-back" href="../../news.html#news.admin.ApprovedArticleLogAdmin">[docs]</a>
 <span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">ApprovedArticleLog</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ApprovedArticleLogAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
-    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;article&#39;</span><span class="p">,</span> <span class="s1">&#39;posted_at&#39;</span><span class="p">)</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Admin configuration for approved article logs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;article&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;posted_at&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;posted_at&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;article__title&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">readonly_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;posted_at&#39;</span><span class="p">,</span>
+    <span class="p">]</span></div>
 
 </pre></div>
 

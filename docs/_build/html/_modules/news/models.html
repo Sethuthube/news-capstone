@@ -39,8 +39,14 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption" role="heading"><span class="caption-text">Project Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">news_capstone</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../news.html">news package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../news_project.html">news_project package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../manage.html">manage module</a></li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -66,7 +72,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for news.models</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.auth.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractUser</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">django.contrib.auth.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractUser</span><span class="p">,</span> <span class="n">Group</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">django.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
 
 
@@ -80,6 +86,8 @@
 <span class="sd">    - Reader: can view articles and newsletters.</span>
 <span class="sd">    - Editor: can review, approve, update, and delete content.</span>
 <span class="sd">    - Journalist: can create, update, and delete own content.</span>
+
+<span class="sd">    The user&#39;s Django group is automatically synced to match their role.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">READER</span> <span class="o">=</span> <span class="s1">&#39;reader&#39;</span>
@@ -92,12 +100,19 @@
         <span class="p">(</span><span class="n">JOURNALIST</span><span class="p">,</span> <span class="s1">&#39;Journalist&#39;</span><span class="p">),</span>
     <span class="p">]</span>
 
+    <span class="n">email</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">EmailField</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
     <span class="n">role</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
         <span class="n">max_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
         <span class="n">choices</span><span class="o">=</span><span class="n">ROLE_CHOICES</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="n">READER</span>
     <span class="p">)</span>
 
+    <span class="c1"># Reader-only fields:</span>
+    <span class="c1"># These are used only when role == &#39;reader&#39;.</span>
+    <span class="c1"># If the user is a journalist or editor, these subscriptions are cleared</span>
+    <span class="c1"># in the save() method below. This satisfies the task requirement that</span>
+    <span class="c1"># journalist users should not keep reader subscription values.</span>
     <span class="n">subscribed_publishers</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span>
         <span class="s1">&#39;Publisher&#39;</span><span class="p">,</span>
         <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -111,6 +126,54 @@
         <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;subscribers_to_journalist&#39;</span>
     <span class="p">)</span>
 
+<div class="viewcode-block" id="CustomUser.save">
+<a class="viewcode-back" href="../../news.html#news.forms.CustomUser.save">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save the user and keep their group/role data consistent.</span>
+
+<span class="sd">        A ManyToManyField cannot literally store None. The practical Django</span>
+<span class="sd">        equivalent is to clear those relationships when they should not apply.</span>
+
+<span class="sd">        Therefore:</span>
+<span class="sd">        - Readers may have subscribed publishers and subscribed journalists.</span>
+<span class="sd">        - Journalists and editors have those reader-only fields cleared.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sync_role_group</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">READER</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subscribed_publishers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subscribed_journalists</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="CustomUser.sync_role_group">
+<a class="viewcode-back" href="../../news.html#news.forms.CustomUser.sync_role_group">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sync_role_group</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Put the user into the Django group matching their role.</span>
+
+<span class="sd">        This supports the task requirement that users should be assigned to</span>
+<span class="sd">        groups based on their role.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">role_group_names</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">READER</span><span class="p">:</span> <span class="s1">&#39;Reader&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">EDITOR</span><span class="p">:</span> <span class="s1">&#39;Editor&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">JOURNALIST</span><span class="p">:</span> <span class="s1">&#39;Journalist&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">group_name</span> <span class="o">=</span> <span class="n">role_group_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">group_name</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">group</span><span class="p">,</span> <span class="n">created</span> <span class="o">=</span> <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">group_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">group</span><span class="p">)</span></div>
+
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s1"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="si">}</span><span class="s1">)&#39;</span></div>
 
@@ -120,7 +183,9 @@
 <a class="viewcode-back" href="../../news.html#news.forms.Publisher">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Publisher</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Represents a publication that can have editors and journalists.</span>
+<span class="sd">    Represents a publication.</span>
+
+<span class="sd">    A publisher can have multiple editors and multiple journalists.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
@@ -148,8 +213,13 @@
 <div class="viewcode-block" id="Article">
 <a class="viewcode-back" href="../../news.html#news.forms.Article">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Article</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a news article.</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a news article submitted and managed by users.&quot;&quot;&quot;</span>
+<span class="sd">    An article is written by a journalist. It may optionally belong to a</span>
+<span class="sd">    publisher. If publisher is blank, the article is treated as an independent</span>
+<span class="sd">    journalist article.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
     <span class="n">content</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">()</span>
@@ -170,7 +240,11 @@
     <span class="p">)</span>
 
     <span class="n">created_at</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">approved</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">approved</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s1">&#39;Indicates whether the article has been approved by an editor.&#39;</span>
+    <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span></div>
@@ -182,6 +256,8 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">Newsletter</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a curated collection of articles.</span>
+
+<span class="sd">    Newsletters are created by journalists and can contain many articles.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
@@ -210,7 +286,10 @@
 <a class="viewcode-back" href="../../news.html#news.forms.ApprovedArticleLog">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ApprovedArticleLog</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Stores records of approved articles posted to the internal API.</span>
+<span class="sd">    Stores records of approved articles.</span>
+
+<span class="sd">    This model acts as the internal logging endpoint target for approved</span>
+<span class="sd">    articles, matching the task requirement to log approved article activity.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">article</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span>

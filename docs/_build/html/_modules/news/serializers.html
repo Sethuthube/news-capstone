@@ -39,8 +39,14 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption" role="heading"><span class="caption-text">Project Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">news_capstone</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../news.html">news package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../news_project.html">news_project package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../manage.html">manage module</a></li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -76,6 +82,8 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">UserSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Serializer for custom users.</span>
+
+<span class="sd">    Passwords are intentionally excluded.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="UserSerializer.Meta">
@@ -89,6 +97,9 @@
             <span class="s1">&#39;role&#39;</span><span class="p">,</span>
             <span class="s1">&#39;subscribed_publishers&#39;</span><span class="p">,</span>
             <span class="s1">&#39;subscribed_journalists&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">,</span>
         <span class="p">]</span></div>
 </div>
 
@@ -99,6 +110,8 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">PublisherSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Serializer for publishers.</span>
+
+<span class="sd">    Editors and journalists are represented by their user IDs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PublisherSerializer.Meta">
@@ -121,6 +134,9 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">ArticleSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Serializer for articles.</span>
+
+<span class="sd">    The author is automatically set in the view when an article is created.</span>
+<span class="sd">    The API user should not manually choose the article author.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">author_username</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
@@ -148,13 +164,13 @@
             <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
             <span class="s1">&#39;approved&#39;</span><span class="p">,</span>
         <span class="p">]</span>
-
         <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">,</span>
             <span class="s1">&#39;author&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;approved&#39;</span><span class="p">,</span>
             <span class="s1">&#39;author_username&#39;</span><span class="p">,</span>
             <span class="s1">&#39;publisher_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;approved&#39;</span><span class="p">,</span>
         <span class="p">]</span></div>
 </div>
 
@@ -165,12 +181,16 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">NewsletterSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Serializer for newsletters.</span>
+
+<span class="sd">    Articles are selected by ID when creating or updating a newsletter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">author_username</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
         <span class="n">source</span><span class="o">=</span><span class="s1">&#39;author.username&#39;</span><span class="p">,</span>
         <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">)</span>
+
+    <span class="n">article_titles</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">SerializerMethodField</span><span class="p">()</span>
 
 <div class="viewcode-block" id="NewsletterSerializer.Meta">
 <a class="viewcode-back" href="../../news.html#news.serializers.NewsletterSerializer.Meta">[docs]</a>
@@ -184,12 +204,24 @@
             <span class="s1">&#39;author&#39;</span><span class="p">,</span>
             <span class="s1">&#39;author_username&#39;</span><span class="p">,</span>
             <span class="s1">&#39;articles&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;article_titles&#39;</span><span class="p">,</span>
         <span class="p">]</span>
-
         <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">,</span>
             <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;author&#39;</span><span class="p">,</span>
             <span class="s1">&#39;author_username&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;article_titles&#39;</span><span class="p">,</span>
         <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="NewsletterSerializer.get_article_titles">
+<a class="viewcode-back" href="../../news.html#news.serializers.NewsletterSerializer.get_article_titles">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_article_titles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return article titles for readable API responses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">article</span><span class="o">.</span><span class="n">title</span> <span class="k">for</span> <span class="n">article</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">articles</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span></div>
 </div>
 
 </pre></div>

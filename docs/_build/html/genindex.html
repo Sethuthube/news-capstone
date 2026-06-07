@@ -39,8 +39,14 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption" role="heading"><span class="caption-text">Project Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">news_capstone</a></li>
+<li class="toctree-l1"><a class="reference internal" href="news.html">news package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="news_project.html">news_project package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manage.html">manage module</a></li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -88,11 +94,14 @@
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
+ | <a href="#W"><strong>W</strong></a>
  
 </div>
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="news.html#news.admin.CustomUserAdmin.add_fieldsets">add_fieldsets (news.admin.CustomUserAdmin attribute)</a>
+</li>
       <li><a href="news.html#news.models.Article.approval_logs">approval_logs (news.models.Article attribute)</a>
 </li>
       <li><a href="news.html#news.views.ArticleViewSet.approve">approve() (news.views.ArticleViewSet method)</a>
@@ -119,15 +128,25 @@
 </li>
       <li><a href="news.html#news.models.Article.MultipleObjectsReturned">Article.MultipleObjectsReturned</a>
 </li>
+      <li><a href="news.html#news.views.article_create">article_create() (in module news.views)</a>
+</li>
+      <li><a href="news.html#news.views.article_delete">article_delete() (in module news.views)</a>
+</li>
       <li><a href="news.html#news.views.article_detail">article_detail() (in module news.views)</a>
+</li>
+      <li><a href="news.html#news.models.ApprovedArticleLog.article_id">article_id (news.models.ApprovedArticleLog attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="news.html#news.models.ApprovedArticleLog.article_id">article_id (news.models.ApprovedArticleLog attribute)</a>
-</li>
       <li><a href="news.html#news.views.article_list">article_list() (in module news.views)</a>
 </li>
+      <li><a href="news.html#news.views.article_update">article_update() (in module news.views)</a>
+</li>
       <li><a href="news.html#news.admin.ArticleAdmin">ArticleAdmin (class in news.admin)</a>
+</li>
+      <li><a href="news.html#news.forms.ArticleForm">ArticleForm (class in news.forms)</a>
+</li>
+      <li><a href="news.html#news.forms.ArticleForm.Meta">ArticleForm.Meta (class in news.forms)</a>
 </li>
       <li><a href="news.html#news.permissions.ArticlePermission">ArticlePermission (class in news.permissions)</a>
 </li>
@@ -147,6 +166,8 @@
 </li>
       <li><a href="news.html#news.signals.assign_user_to_role_group">assign_user_to_role_group() (in module news.signals)</a>
 </li>
+      <li><a href="news.html#news.tests.NewsApplicationTests.authenticate">authenticate() (news.tests.NewsApplicationTests method)</a>
+</li>
       <li><a href="news.html#news.models.Article.author">author (news.models.Article attribute)</a>
 
       <ul>
@@ -165,8 +186,18 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="news.html#news.forms.RegisterForm.base_fields">base_fields (news.forms.RegisterForm attribute)</a>
+      <li><a href="news.html#news.forms.ArticleForm.base_fields">base_fields (news.forms.ArticleForm attribute)</a>
+
+      <ul>
+        <li><a href="news.html#news.forms.NewsletterForm.base_fields">(news.forms.NewsletterForm attribute)</a>
 </li>
+        <li><a href="news.html#news.forms.PublisherForm.base_fields">(news.forms.PublisherForm attribute)</a>
+</li>
+        <li><a href="news.html#news.forms.RegisterForm.base_fields">(news.forms.RegisterForm attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="news.html#news.views.ArticleViewSet.basename">basename (news.views.ArticleViewSet attribute)</a>
 
       <ul>
@@ -183,6 +214,8 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="news.html#news.forms.RegisterForm.clean_email">clean_email() (news.forms.RegisterForm method)</a>
+</li>
       <li><a href="news.html#news.models.Article.content">content (news.models.Article attribute)</a>
 </li>
       <li><a href="news.html#news.signals.create_role_groups">create_role_groups() (in module news.signals)</a>
@@ -213,8 +246,16 @@
 </li>
       <li><a href="news.html#news.models.CustomUser.date_joined">date_joined (news.models.CustomUser attribute)</a>
 </li>
-      <li><a href="news.html#news.forms.RegisterForm.declared_fields">declared_fields (news.forms.RegisterForm attribute)</a>
+      <li><a href="news.html#news.forms.ArticleForm.declared_fields">declared_fields (news.forms.ArticleForm attribute)</a>
+
+      <ul>
+        <li><a href="news.html#news.forms.NewsletterForm.declared_fields">(news.forms.NewsletterForm attribute)</a>
 </li>
+        <li><a href="news.html#news.forms.PublisherForm.declared_fields">(news.forms.PublisherForm attribute)</a>
+</li>
+        <li><a href="news.html#news.forms.RegisterForm.declared_fields">(news.forms.RegisterForm attribute)</a>
+</li>
+      </ul></li>
       <li><a href="news.html#news.apps.NewsConfig.default_auto_field">default_auto_field (news.apps.NewsConfig attribute)</a>
 </li>
       <li><a href="news.migrations.html#news.migrations.0001_initial.Migration.dependencies">dependencies (news.migrations.0001_initial.Migration attribute)</a>
@@ -271,9 +312,15 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="news.html#news.forms.RegisterForm.Meta.fields">fields (news.forms.RegisterForm.Meta attribute)</a>
+      <li><a href="news.html#news.forms.ArticleForm.Meta.fields">fields (news.forms.ArticleForm.Meta attribute)</a>
 
       <ul>
+        <li><a href="news.html#news.forms.NewsletterForm.Meta.fields">(news.forms.NewsletterForm.Meta attribute)</a>
+</li>
+        <li><a href="news.html#news.forms.PublisherForm.Meta.fields">(news.forms.PublisherForm.Meta attribute)</a>
+</li>
+        <li><a href="news.html#news.forms.RegisterForm.Meta.fields">(news.forms.RegisterForm.Meta attribute)</a>
+</li>
         <li><a href="news.html#news.serializers.ArticleSerializer.Meta.fields">(news.serializers.ArticleSerializer.Meta attribute)</a>
 </li>
         <li><a href="news.html#news.serializers.NewsletterSerializer.Meta.fields">(news.serializers.NewsletterSerializer.Meta attribute)</a>
@@ -287,6 +334,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="news.html#news.admin.CustomUserAdmin.fieldsets">fieldsets (news.admin.CustomUserAdmin attribute)</a>
 </li>
+      <li><a href="news.html#news.admin.CustomUserAdmin.filter_horizontal">filter_horizontal (news.admin.CustomUserAdmin attribute)</a>
+
+      <ul>
+        <li><a href="news.html#news.admin.NewsletterAdmin.filter_horizontal">(news.admin.NewsletterAdmin attribute)</a>
+</li>
+        <li><a href="news.html#news.admin.PublisherAdmin.filter_horizontal">(news.admin.PublisherAdmin attribute)</a>
+</li>
+      </ul></li>
       <li><a href="news.html#news.models.CustomUser.first_name">first_name (news.models.CustomUser attribute)</a>
 </li>
   </ul></td>
@@ -295,6 +350,8 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="news.html#news.serializers.NewsletterSerializer.get_article_titles">get_article_titles() (news.serializers.NewsletterSerializer method)</a>
+</li>
       <li><a href="news.html#news.models.Article.get_next_by_created_at">get_next_by_created_at() (news.models.Article method)</a>
 
       <ul>
@@ -336,10 +393,6 @@
       <ul>
         <li><a href="news.html#news.permissions.IsEditor.has_permission">(news.permissions.IsEditor method)</a>
 </li>
-        <li><a href="news.html#news.permissions.IsJournalist.has_permission">(news.permissions.IsJournalist method)</a>
-</li>
-        <li><a href="news.html#news.permissions.IsReader.has_permission">(news.permissions.IsReader method)</a>
-</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -363,10 +416,10 @@
         <li><a href="news.html#news.models.Publisher.id">(news.models.Publisher attribute)</a>
 </li>
       </ul></li>
-      <li><a href="news.migrations.html#news.migrations.0001_initial.Migration.initial">initial (news.migrations.0001_initial.Migration attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="news.migrations.html#news.migrations.0001_initial.Migration.initial">initial (news.migrations.0001_initial.Migration attribute)</a>
+</li>
       <li><a href="news.html#news.models.CustomUser.is_active">is_active (news.models.CustomUser attribute)</a>
 </li>
       <li><a href="news.html#news.models.CustomUser.is_staff">is_staff (news.models.CustomUser attribute)</a>
@@ -374,10 +427,6 @@
       <li><a href="news.html#news.models.CustomUser.is_superuser">is_superuser (news.models.CustomUser attribute)</a>
 </li>
       <li><a href="news.html#news.permissions.IsEditor">IsEditor (class in news.permissions)</a>
-</li>
-      <li><a href="news.html#news.permissions.IsJournalist">IsJournalist (class in news.permissions)</a>
-</li>
-      <li><a href="news.html#news.permissions.IsReader">IsReader (class in news.permissions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -391,6 +440,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="news.html#news.views.journalist_list">journalist_list() (in module news.views)</a>
+</li>
       <li><a href="news.html#news.models.CustomUser.journalist_publishers">journalist_publishers (news.models.CustomUser attribute)</a>
 </li>
       <li><a href="news.html#news.models.Publisher.journalists">journalists (news.models.Publisher attribute)</a>
@@ -419,8 +470,16 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="news.html#news.admin.ArticleAdmin.list_filter">list_filter (news.admin.ArticleAdmin attribute)</a>
+      <li><a href="news.html#news.admin.ApprovedArticleLogAdmin.list_filter">list_filter (news.admin.ApprovedArticleLogAdmin attribute)</a>
+
+      <ul>
+        <li><a href="news.html#news.admin.ArticleAdmin.list_filter">(news.admin.ArticleAdmin attribute)</a>
 </li>
+        <li><a href="news.html#news.admin.CustomUserAdmin.list_filter">(news.admin.CustomUserAdmin attribute)</a>
+</li>
+        <li><a href="news.html#news.admin.NewsletterAdmin.list_filter">(news.admin.NewsletterAdmin attribute)</a>
+</li>
+      </ul></li>
       <li><a href="news.html#news.models.CustomUser.logentry_set">logentry_set (news.models.CustomUser attribute)</a>
 </li>
       <li><a href="news.html#news.views.login_view">login_view() (in module news.views)</a>
@@ -453,14 +512,26 @@
 </li>
         <li><a href="news.html#news.admin.PublisherAdmin.media">(news.admin.PublisherAdmin property)</a>
 </li>
+        <li><a href="news.html#news.forms.ArticleForm.media">(news.forms.ArticleForm property)</a>
+</li>
+        <li><a href="news.html#news.forms.NewsletterForm.media">(news.forms.NewsletterForm property)</a>
+</li>
+        <li><a href="news.html#news.forms.PublisherForm.media">(news.forms.PublisherForm property)</a>
+</li>
         <li><a href="news.html#news.forms.RegisterForm.media">(news.forms.RegisterForm property)</a>
 </li>
       </ul></li>
       <li><a href="news.migrations.html#news.migrations.0001_initial.Migration">Migration (class in news.migrations.0001_initial)</a>
 </li>
-      <li><a href="news.html#news.forms.RegisterForm.Meta.model">model (news.forms.RegisterForm.Meta attribute)</a>
+      <li><a href="news.html#news.forms.ArticleForm.Meta.model">model (news.forms.ArticleForm.Meta attribute)</a>
 
       <ul>
+        <li><a href="news.html#news.forms.NewsletterForm.Meta.model">(news.forms.NewsletterForm.Meta attribute)</a>
+</li>
+        <li><a href="news.html#news.forms.PublisherForm.Meta.model">(news.forms.PublisherForm.Meta attribute)</a>
+</li>
+        <li><a href="news.html#news.forms.RegisterForm.Meta.model">(news.forms.RegisterForm.Meta attribute)</a>
+</li>
         <li><a href="news.html#news.serializers.ArticleSerializer.Meta.model">(news.serializers.ArticleSerializer.Meta attribute)</a>
 </li>
         <li><a href="news.html#news.serializers.NewsletterSerializer.Meta.model">(news.serializers.NewsletterSerializer.Meta attribute)</a>
@@ -470,6 +541,8 @@
         <li><a href="news.html#news.serializers.UserSerializer.Meta.model">(news.serializers.UserSerializer.Meta attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     module
 
@@ -610,8 +683,6 @@
         <li><a href="news.html#module-news.tests">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     news.urls
 
@@ -619,6 +690,8 @@
         <li><a href="news.html#module-news.urls">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     news.views
 
@@ -661,7 +734,7 @@
         <li><a href="news_project.html#module-news_project.wsgi">module</a>
 </li>
       </ul></li>
-      <li><a href="news.html#news.tests.NewsAPITestCase">NewsAPITestCase (class in news.tests)</a>
+      <li><a href="news.html#news.tests.NewsApplicationTests">NewsApplicationTests (class in news.tests)</a>
 </li>
       <li><a href="news.html#news.apps.NewsConfig">NewsConfig (class in news.apps)</a>
 </li>
@@ -671,7 +744,19 @@
 </li>
       <li><a href="news.html#news.models.Newsletter.MultipleObjectsReturned">Newsletter.MultipleObjectsReturned</a>
 </li>
+      <li><a href="news.html#news.views.newsletter_create">newsletter_create() (in module news.views)</a>
+</li>
+      <li><a href="news.html#news.views.newsletter_delete">newsletter_delete() (in module news.views)</a>
+</li>
+      <li><a href="news.html#news.views.newsletter_list">newsletter_list() (in module news.views)</a>
+</li>
+      <li><a href="news.html#news.views.newsletter_update">newsletter_update() (in module news.views)</a>
+</li>
       <li><a href="news.html#news.admin.NewsletterAdmin">NewsletterAdmin (class in news.admin)</a>
+</li>
+      <li><a href="news.html#news.forms.NewsletterForm">NewsletterForm (class in news.forms)</a>
+</li>
+      <li><a href="news.html#news.forms.NewsletterForm.Meta">NewsletterForm.Meta (class in news.forms)</a>
 </li>
       <li><a href="news.html#news.models.Article.newsletters">newsletters (news.models.Article attribute)</a>
 
@@ -733,19 +818,31 @@
       </ul></li>
       <li><a href="news.html#news.models.ApprovedArticleLog.posted_at">posted_at (news.models.ApprovedArticleLog attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="news.html#news.models.Publisher">Publisher (class in news.models)</a>
 </li>
       <li><a href="news.html#news.models.Article.publisher">publisher (news.models.Article attribute)</a>
 </li>
       <li><a href="news.html#news.models.Publisher.DoesNotExist">Publisher.DoesNotExist</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="news.html#news.models.Publisher.MultipleObjectsReturned">Publisher.MultipleObjectsReturned</a>
+</li>
+      <li><a href="news.html#news.views.publisher_create">publisher_create() (in module news.views)</a>
+</li>
+      <li><a href="news.html#news.views.publisher_delete">publisher_delete() (in module news.views)</a>
 </li>
       <li><a href="news.html#news.models.Article.publisher_id">publisher_id (news.models.Article attribute)</a>
 </li>
+      <li><a href="news.html#news.views.publisher_list">publisher_list() (in module news.views)</a>
+</li>
+      <li><a href="news.html#news.views.publisher_update">publisher_update() (in module news.views)</a>
+</li>
       <li><a href="news.html#news.admin.PublisherAdmin">PublisherAdmin (class in news.admin)</a>
+</li>
+      <li><a href="news.html#news.forms.PublisherForm">PublisherForm (class in news.forms)</a>
+</li>
+      <li><a href="news.html#news.forms.PublisherForm.Meta">PublisherForm.Meta (class in news.forms)</a>
 </li>
       <li><a href="news.html#news.serializers.PublisherSerializer">PublisherSerializer (class in news.serializers)</a>
 </li>
@@ -778,15 +875,27 @@
       <ul>
         <li><a href="news.html#news.serializers.NewsletterSerializer.Meta.read_only_fields">(news.serializers.NewsletterSerializer.Meta attribute)</a>
 </li>
+        <li><a href="news.html#news.serializers.UserSerializer.Meta.read_only_fields">(news.serializers.UserSerializer.Meta attribute)</a>
+</li>
       </ul></li>
       <li><a href="news.html#news.models.CustomUser.READER">READER (news.models.CustomUser attribute)</a>
 </li>
       <li><a href="news.html#news.views.reader_dashboard">reader_dashboard() (in module news.views)</a>
 </li>
-      <li><a href="news.html#news.apps.NewsConfig.ready">ready() (news.apps.NewsConfig method)</a>
+      <li><a href="news.html#news.views.reader_newsletters">reader_newsletters() (in module news.views)</a>
 </li>
+      <li><a href="news.html#news.admin.ApprovedArticleLogAdmin.readonly_fields">readonly_fields (news.admin.ApprovedArticleLogAdmin attribute)</a>
+
+      <ul>
+        <li><a href="news.html#news.admin.ArticleAdmin.readonly_fields">(news.admin.ArticleAdmin attribute)</a>
+</li>
+        <li><a href="news.html#news.admin.NewsletterAdmin.readonly_fields">(news.admin.NewsletterAdmin attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="news.html#news.apps.NewsConfig.ready">ready() (news.apps.NewsConfig method)</a>
+</li>
       <li><a href="news.html#news.views.register_view">register_view() (in module news.views)</a>
 </li>
       <li><a href="news.html#news.forms.RegisterForm">RegisterForm (class in news.forms)</a>
@@ -805,9 +914,15 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="news.html#news.admin.ArticleAdmin.search_fields">search_fields (news.admin.ArticleAdmin attribute)</a>
+      <li><a href="news.html#news.models.CustomUser.save">save() (news.models.CustomUser method)</a>
+</li>
+      <li><a href="news.html#news.admin.ApprovedArticleLogAdmin.search_fields">search_fields (news.admin.ApprovedArticleLogAdmin attribute)</a>
 
       <ul>
+        <li><a href="news.html#news.admin.ArticleAdmin.search_fields">(news.admin.ArticleAdmin attribute)</a>
+</li>
+        <li><a href="news.html#news.admin.CustomUserAdmin.search_fields">(news.admin.CustomUserAdmin attribute)</a>
+</li>
         <li><a href="news.html#news.admin.NewsletterAdmin.search_fields">(news.admin.NewsletterAdmin attribute)</a>
 </li>
         <li><a href="news.html#news.admin.PublisherAdmin.search_fields">(news.admin.PublisherAdmin attribute)</a>
@@ -823,10 +938,14 @@
         <li><a href="news.html#news.views.UserViewSet.serializer_class">(news.views.UserViewSet attribute)</a>
 </li>
       </ul></li>
-      <li><a href="news.html#news.tests.NewsAPITestCase.setUp">setUp() (news.tests.NewsAPITestCase method)</a>
+      <li><a href="news.html#news.tests.NewsApplicationTests.setUp">setUp() (news.tests.NewsApplicationTests method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="news.html#news.views.subscribe_journalist">subscribe_journalist() (in module news.views)</a>
+</li>
+      <li><a href="news.html#news.views.subscribe_publisher">subscribe_publisher() (in module news.views)</a>
+</li>
       <li><a href="news.html#news.views.ArticleViewSet.subscribed">subscribed() (news.views.ArticleViewSet method)</a>
 </li>
       <li><a href="news.html#news.models.CustomUser.subscribed_journalists">subscribed_journalists (news.models.CustomUser attribute)</a>
@@ -847,29 +966,37 @@
         <li><a href="news.html#news.views.UserViewSet.suffix">(news.views.UserViewSet attribute)</a>
 </li>
       </ul></li>
+      <li><a href="news.html#news.models.CustomUser.sync_role_group">sync_role_group() (news.models.CustomUser method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="news.html#news.tests.NewsAPITestCase.test_authenticated_reader_can_view_articles">test_authenticated_reader_can_view_articles() (news.tests.NewsAPITestCase method)</a>
+      <li><a href="news.html#news.tests.NewsApplicationTests.test_approval_sends_email_to_subscribed_reader">test_approval_sends_email_to_subscribed_reader() (news.tests.NewsApplicationTests method)</a>
 </li>
-      <li><a href="news.html#news.tests.NewsAPITestCase.test_editor_can_approve_article">test_editor_can_approve_article() (news.tests.NewsAPITestCase method)</a>
+      <li><a href="news.html#news.tests.NewsApplicationTests.test_duplicate_email_is_not_allowed">test_duplicate_email_is_not_allowed() (news.tests.NewsApplicationTests method)</a>
 </li>
-      <li><a href="news.html#news.tests.NewsAPITestCase.test_editor_can_delete_article">test_editor_can_delete_article() (news.tests.NewsAPITestCase method)</a>
+      <li><a href="news.html#news.tests.NewsApplicationTests.test_editor_can_approve_article">test_editor_can_approve_article() (news.tests.NewsApplicationTests method)</a>
 </li>
-      <li><a href="news.html#news.tests.NewsAPITestCase.test_journalist_can_create_article">test_journalist_can_create_article() (news.tests.NewsAPITestCase method)</a>
+      <li><a href="news.html#news.tests.NewsApplicationTests.test_editor_can_delete_article">test_editor_can_delete_article() (news.tests.NewsApplicationTests method)</a>
 </li>
-      <li><a href="news.html#news.tests.NewsAPITestCase.test_newsletter_list_works">test_newsletter_list_works() (news.tests.NewsAPITestCase method)</a>
+      <li><a href="news.html#news.tests.NewsApplicationTests.test_journalist_can_create_article">test_journalist_can_create_article() (news.tests.NewsApplicationTests method)</a>
+</li>
+      <li><a href="news.html#news.tests.NewsApplicationTests.test_newsletter_can_be_created_by_journalist">test_newsletter_can_be_created_by_journalist() (news.tests.NewsApplicationTests method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="news.html#news.tests.NewsAPITestCase.test_reader_can_view_subscribed_articles">test_reader_can_view_subscribed_articles() (news.tests.NewsAPITestCase method)</a>
+      <li><a href="news.html#news.tests.NewsApplicationTests.test_reader_can_only_retrieve_approved_articles">test_reader_can_only_retrieve_approved_articles() (news.tests.NewsApplicationTests method)</a>
 </li>
-      <li><a href="news.html#news.tests.NewsAPITestCase.test_reader_cannot_create_article">test_reader_cannot_create_article() (news.tests.NewsAPITestCase method)</a>
+      <li><a href="news.html#news.tests.NewsApplicationTests.test_reader_can_retrieve_only_subscribed_content">test_reader_can_retrieve_only_subscribed_content() (news.tests.NewsApplicationTests method)</a>
 </li>
-      <li><a href="news.html#news.tests.NewsAPITestCase.test_unauthenticated_user_cannot_access_articles">test_unauthenticated_user_cannot_access_articles() (news.tests.NewsAPITestCase method)</a>
+      <li><a href="news.html#news.tests.NewsApplicationTests.test_reader_cannot_approve_article">test_reader_cannot_approve_article() (news.tests.NewsApplicationTests method)</a>
+</li>
+      <li><a href="news.html#news.tests.NewsApplicationTests.test_reader_cannot_create_article">test_reader_cannot_create_article() (news.tests.NewsApplicationTests method)</a>
+</li>
+      <li><a href="news.html#news.tests.NewsApplicationTests.test_reader_cannot_delete_article">test_reader_cannot_delete_article() (news.tests.NewsApplicationTests method)</a>
 </li>
       <li><a href="news.html#news.models.Article.title">title (news.models.Article attribute)</a>
 
@@ -895,6 +1022,18 @@
 </li>
       <li><a href="news.html#news.views.UserViewSet">UserViewSet (class in news.views)</a>
 </li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="news.html#news.forms.ArticleForm.Meta.widgets">widgets (news.forms.ArticleForm.Meta attribute)</a>
+
+      <ul>
+        <li><a href="news.html#news.forms.NewsletterForm.Meta.widgets">(news.forms.NewsletterForm.Meta attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 

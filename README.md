@@ -991,7 +991,130 @@ python manage.py test
 ```bash
 python manage.py createsuperuser
 ```
+---
 
+## Sphinx Documentation Setup
+
+This project includes Sphinx documentation inside the `docs` folder.
+
+The documentation was generated to provide user-friendly technical documentation for the Django project.
+
+### 1. Install Sphinx
+
+If Sphinx is not already installed, install it with:
+
+```bash
+pip install sphinx                
+
+### 2. Move into the docs folder
+
+```bash
+cd docs
+### 3. Generate the HTML documentation
+
+On Windows, run:
+
+```bash
+.\make.bat html
+```
+
+On macOS/Linux, run:
+
+```bash
+make html
+```
+
+### 4. Open the documentation
+
+After building the documentation, open:
+
+```text
+docs/_build/html/index.html
+```
+
+### 5. Important Sphinx Configuration
+
+For Django projects, the Sphinx `conf.py` file must include the Django project setup.
+
+Example:
+
+```python
+import os
+import sys
+import django
+
+sys.path.insert(0, os.path.abspath('..'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'news_project.settings'
+django.setup()
+```
+
+This allows Sphinx to import the Django modules correctly when generating documentation.
+
+---
+
+## Docker Setup Instructions
+
+This project includes a Dockerfile so that the application can be built and run inside a Docker container.
+
+### 1. Make sure Docker is installed
+
+Confirm Docker is working:
+
+```bash
+docker --version
+```
+
+### 2. Build the Docker image
+
+Run this command from the root folder of the project, where the `Dockerfile` is located:
+
+```bash
+docker build -t news-capstone .
+```
+
+### 3. Run the Docker container
+
+```bash
+docker run -p 8000:8000 news-capstone
+```
+
+### 4. Open the application
+
+Once the container is running, open the app in your browser:
+
+```text
+http://127.0.0.1:8000/
+```
+
+### 5. Stop the container
+
+To stop the running container, press:
+
+```text
+CTRL + C
+```
+
+If the container is running in the background, list running containers:
+
+```bash
+docker ps
+```
+
+Then stop the container:
+
+```bash
+docker stop <container_id>
+```
+
+### Docker Notes
+
+- The Dockerfile installs the project dependencies from `requirements.txt`.
+- The container exposes port `8000`.
+- The application runs using Django’s development server.
+- Local database settings may need to be adjusted depending on the user’s environment.
+- Do not commit database passwords, secret keys, or access tokens to GitHub.
+
+---
 ---
 
 ## Final Pre-Submission Checklist

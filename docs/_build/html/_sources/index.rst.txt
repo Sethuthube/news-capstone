@@ -1,19 +1,27 @@
-.. News Capstone documentation master file, created by
-   sphinx-quickstart on Sun May 31 22:02:23 2026.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+News Capstone Project Documentation
+===================================
 
-News Capstone documentation
-===========================
+Welcome to the documentation for the News Capstone Django project.
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+This documentation contains the main modules, views, models, forms, URLs,
+and supporting files used in the Django application.
 
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Project Documentation:
 
-      modules
+   modules
+   news
+   news_project
+   manage
+
+Indices and Tables
+------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
 
