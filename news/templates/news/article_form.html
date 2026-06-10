@@ -65,9 +65,25 @@
             Save Article
         </button>
 
-        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
-            Cancel
-        </a>
+        {% if is_update and article %}
+            {% if article.approved %}
+                <a href="{% url 'article_detail' article_id=article.id %}" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            {% elif user.role == 'editor' or user.is_superuser %}
+                <a href="{% url 'editor_dashboard' %}" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            {% else %}
+                <a href="{% url 'journalist_dashboard' %}" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'article_list' %}" class="btn btn-outline-secondary">
+                Cancel
+            </a>
+        {% endif %}
     </form>
 </div>
 {% endblock %}

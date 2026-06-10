@@ -484,14 +484,26 @@ def article_update(request, article_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Article updated successfully.')
-            return redirect('article_detail', article_id=article.id)
+
+            if article.approved:
+                return redirect('article_detail', article_id=article.id)
+
+            if request.user.role == 'editor' or request.user.is_superuser:
+                return redirect('editor_dashboard')
+
+            return redirect('journalist_dashboard')
     else:
         form = ArticleForm(instance=article)
 
     return render(
         request,
         'news/article_form.html',
-        {'form': form, 'title': 'Update Article'}
+        {
+            'form': form,
+            'article': article,
+            'title': 'Update Article',
+            'is_update': True,
+        }
     )
 
 
